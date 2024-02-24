@@ -96,7 +96,7 @@ export const useModuleStore = defineStore('module', () => {
 	function remove(idx) {
 		enabledModules.value[idx].input?.disconnect()
 		enabledModules.value[idx].output?.disconnect()
-		enabledModules.value.splice(idx, 1)
+		delete enabledModules.value[idx]
 		nextTick(() => {
 			cableStore.updateCables()
 		})
@@ -176,6 +176,7 @@ export const useModuleStore = defineStore('module', () => {
 	}
 
 	function drop(event) {
+					console.log(enabledModules.value)
 		if(event.dataTransfer.types.includes(mimes.value.moduleType) && !event.dataTransfer.types.includes(cableStore.mimes.cableId1)) {
 			const offsetX = event.dataTransfer.getData(mimes.value.moduleDragOffsetX)
 			const offsetY = event.dataTransfer.getData(mimes.value.moduleDragOffsetY)

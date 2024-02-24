@@ -28,25 +28,27 @@
         @dragover="moduleStore.dragOver"
         @drop="moduleStore.drop"
       >
-        <Module
-          v-for="(module, idx) in enabledModules"
-          draggable="true"
-          class="enabledModule"
-          :key="idx"
-          :data-id="module.id"
-          :data-idx="idx"
-          :idx="idx"
-          :name="module.name"
-          :controls="module.controls"
-          :jacks="module.jacks"
-          :style="{
-            position: 'absolute',
-            left: module.pos.x + 'px',
-            top: module.pos.y + 'px'
-          }"
-          @dragstart="moduleStore.dragStart"
-          @dragend="moduleStore.dragEnd"
-        />
+        <template v-for="(module, idx) in enabledModules">
+          <Module
+            v-if="module !== undefined"
+            draggable="true"
+            class="enabledModule"
+            :key="idx"
+            :data-id="module.id"
+            :data-idx="idx"
+            :idx="idx"
+            :name="module.name"
+            :controls="module.controls"
+            :jacks="module.jacks"
+            :style="{
+              position: 'absolute',
+              left: module.pos.x + 'px',
+              top: module.pos.y + 'px'
+            }"
+            @dragstart="moduleStore.dragStart"
+            @dragend="moduleStore.dragEnd"
+          />
+        </template>
       </v-sheet>
       <v-sheet class="flex-shrink-1">
         <Jack name="Output" dataKey="master.output" dataType="input" />
