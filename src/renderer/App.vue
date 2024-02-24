@@ -10,24 +10,18 @@
         @dragover="baseDragOver"
         @drop="baseDrop"
       >
-        <v-container
-        >
-          <v-row>
-            <v-col v-for="(module, id) in modules" :key="id">
-              <v-sheet>
-                <Module
-                  draggable="true"
-                  :data-id="id"
-                  :key="id"
-                  :name="module.name"
-                  :controls="module.controls"
-                  :jacks="module.jacks"
-                  @dragstart="baseDragStart"
-                />
-              </v-sheet>
-            </v-col>
-          </v-row>
-        </v-container>
+        <v-sheet v-for="(module, id) in modules" :key="id">
+          <Module
+            draggable="true"
+            :data-id="id"
+            :key="id"
+            :name="module.name"
+            :controls="module.controls"
+            :jacks="module.jacks"
+            @dragstart="baseDragStart"
+            @dragend="dragEnd"
+          />
+        </v-sheet>
       </v-sheet>
       <v-sheet
         class="flex-grow-1 h-screen"
@@ -51,6 +45,7 @@
             top: module.pos.y + 'px'
           }"
           @dragstart="dragStart"
+          @dragend="dragEnd"
         />
       </v-sheet>
       <v-sheet class="flex-shrink-1">
@@ -60,10 +55,10 @@
         width="100%"
         height="100%"
         style="
-          position: absolute;
-          top: 0;
-          left: 0;
-          pointer-events: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        pointer-events: none;
         "
       >
         <path
@@ -104,6 +99,22 @@ const modules = {
       {
         name: 'Input'
       },
+      {
+        name: 'Output'
+      }
+    ]
+  },
+  oscillator: {
+    name: 'Osc',
+    controls: [
+      {
+        name: 'Freq',
+        min: 1,
+        max: 16e3,
+        value: 1e3
+      }
+    ],
+    jacks: [
       {
         name: 'Output'
       }
@@ -174,6 +185,10 @@ function dragOver(event) {
   if(event.dataTransfer.types.includes(mimes.moduleType)) {
     event.preventDefault()
   }
+}
+
+function dragEnd(event) {
+  event.dataTransfer.clearData()
 }
 
 function drop(event) {

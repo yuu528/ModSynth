@@ -8,6 +8,7 @@
       :data-id="props.dataKey"
       @dragstart="cableStore.dragStart"
       @dragover="cableStore.dragOver"
+      @dragend="cableStore.dragEnd"
       @drop="cableStore.drop"
       @mouseenter="mouseEnter"
       @mouseout="mouseOut"
