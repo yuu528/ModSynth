@@ -63,37 +63,35 @@ export const useCableStore = defineStore('cable', () => {
 
 			updateCables()
 
-			const src = getParentModuleObj(p1).output
+			const src = getAudioNode(p1)
+			const dest = getAudioNode(p2)
 
-			let dest
-			if(p2.indexOf('master') !== -1) {
-				dest = moduleStore.audioCtx.destination
-			} else {
-				dest = getParentModuleObj(p2).input
+			if(src !== null && dest !== null) {
+				src.connect(dest)
 			}
-
-			src.connect(dest)
 		}
 	}
 
 	function remove(p: string) {
 		const removed = cables.value.filter(cable =>
-			cable.j1 === p || cables.j2 === p
+			cable.j1 === p || cable.j2 === p
 		)
 		cables.value = cables.value.filter(cable =>
 			cable.j1 !== p && cable.j2 !== p
 		)
 
+		console.log(removed)
+		console.log(cables.value)
+
 		for(const cable of removed) {
 			const jack1 = getJack(cable.j1)
 			const jack2 = getJack(cable.j2)
 
-			if(jack1.dataset.type === 'output') {
-				getParentModuleObj(cable.j1).output.disconnect()
-			}
+			const src = getAudioNode(cable.j1)
+			const dest = getAudioNode(cable.j2)
 
-			if(jack2.dataset.type === 'output') {
-				getParentModuleObj(cable.j2).output.disconnect()
+			if(src !== null && dest !== null) {
+				src.disconnect(dest)
 			}
 		}
 		updateCables()
@@ -124,6 +122,34 @@ export const useCableStore = defineStore('cable', () => {
 
 	function getParentModuleObj(id: string) {
 		return moduleStore.enabledModules[getJack(id).dataset.moduleidx]
+	}
+
+	function getAudioNode(id: string) {
+		if(id.indexOf('master') !== -1) {
+			return moduleStore.audioCtx.destination
+		}
+
+		const jack = getJack(id)
+		const moduleObj = getParentModuleObj(id)
+
+		let result = undefined
+		if(jack !== undefined && moduleObj !== undefined) {
+			switch(jack.dataset.type) {
+				case 'output':
+					result = moduleObj.output
+					break
+
+				case 'input':
+					result = moduleObj.input
+					break
+			}
+
+			if(result !== undefined) {
+				return result
+			}
+		}
+
+		return null
 	}
 
 	function updateCables() {
