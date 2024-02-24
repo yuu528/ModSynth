@@ -67,6 +67,12 @@ export const useModuleStore = defineStore('module', () => {
 
 	function add(module) {
 		switch(module.id) {
+			case 'volume':
+				module.input = audioCtx.value.createGain()
+				module.input.gain.setValueAtTime(0.1, audioCtx.value.currentTime)
+				module.output = module.input
+				break
+
 			case 'oscillator':
 				module.output = audioCtx.value.createOscillator()
 				module.output.type = "sine"
@@ -79,6 +85,8 @@ export const useModuleStore = defineStore('module', () => {
 	}
 
 	function remove(idx) {
+		enabledModules.value[idx].input?.disconnect()
+		enabledModules.value[idx].output?.disconnect()
 		enabledModules.value.splice(idx, 1)
 		nextTick(() => {
 			cableStore.updateCables()
