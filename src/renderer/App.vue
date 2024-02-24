@@ -49,7 +49,7 @@
         />
       </v-sheet>
       <v-sheet class="flex-shrink-1">
-        <Jack name="Output" dataKey="master.output" />
+        <Jack name="Output" dataKey="master.output" dataType="input" />
       </v-sheet>
       <svg
         width="100%"

@@ -33,10 +33,12 @@ export const useModuleStore = defineStore('module', () => {
 			],
 			jacks: [
 				{
-					name: 'Input'
+					name: 'Input',
+					type: 'input'
 				},
 				{
-					name: 'Output'
+					name: 'Output',
+					type: 'output'
 				}
 			]
 		},
@@ -52,13 +54,36 @@ export const useModuleStore = defineStore('module', () => {
 			],
 			jacks: [
 				{
-					name: 'Output'
+					name: 'Output',
+					type: 'output'
 				}
 			]
 		}
 	})
 
 	const enabledModules = ref([])
+
+	const audioCtx = ref(new window.AudioContext())
+
+	function add(module) {
+		switch(module.id) {
+			case 'oscillator':
+				module.output = audioCtx.value.createOscillator()
+				module.output.type = "sine"
+				module.output.frequency.setValueAtTime(1e3, audioCtx.value.currentTime)
+				module.output.start()
+				break
+		}
+
+		enabledModules.value.push(module)
+	}
+
+	function remove(idx) {
+		enabledModules.value.splice(idx, 1)
+		nextTick(() => {
+			cableStore.updateCables()
+		})
+	}
 
 	function baseDragStart(event) {
 		event.dataTransfer.setData(mimes.value.moduleId, event.target.dataset.id)
@@ -83,10 +108,7 @@ export const useModuleStore = defineStore('module', () => {
 		if(event.dataTransfer.types.includes(mimes.value.moduleType)) {
 			if(event.dataTransfer.getData(mimes.value.moduleType) == types.value.enabled) {
 				const idx = event.dataTransfer.getData(mimes.value.moduleIdx)
-				enabledModules.value.splice(idx, 1)
-				nextTick(() => {
-					cableStore.updateCables()
-				})
+				remove(idx)
 			}
 		}
 	}
@@ -131,7 +153,7 @@ export const useModuleStore = defineStore('module', () => {
 						y: event.clientY - offsetY
 					}
 
-					enabledModules.value.push(module)
+					add(module)
 				break
 
 				case types.value.enabled:
@@ -143,7 +165,7 @@ export const useModuleStore = defineStore('module', () => {
 					}
 
 					nextTick(() => {
-					cableStore.updateCables()
+						cableStore.updateCables()
 					})
 				break
 			}
@@ -151,7 +173,8 @@ export const useModuleStore = defineStore('module', () => {
 	}
 
 	return {
-		mimes, types, modules, enabledModules,
+		mimes, types, modules, enabledModules, audioCtx,
+		add, remove,
 		baseDragStart, baseDragOver, baseDrop,
 		dragStart, dragOver, dragEnd, drop
 	}

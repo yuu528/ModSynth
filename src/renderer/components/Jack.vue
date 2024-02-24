@@ -6,6 +6,8 @@
       ref="jack"
       draggable="true"
       :data-id="props.dataKey"
+      :data-type="props.dataType"
+      :data-moduleIdx="props.dataModuleIdx"
       @dragstart="cableStore.dragStart"
       @dragover="cableStore.dragOver"
       @dragend="cableStore.dragEnd"
@@ -37,7 +39,9 @@ onMounted(() => {
 
 const props = defineProps([
   'name',
-  'dataKey'
+  'dataKey',
+  'dataType',
+  'dataModuleIdx'
 ])
 
 function mouseEnter(event) {
