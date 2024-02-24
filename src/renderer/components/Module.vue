@@ -10,10 +10,14 @@
         <v-col v-for="control in props.controls" :key="control.name">
           <v-text-field
             type="number"
-            :v-model="control.value"
+            density="compact"
+            v-model="control.value"
+            :class="control.id"
             :label="control.name"
             :min="control.min"
             :max="control.max"
+            :step="control.step"
+            @change="event => { moduleStore.updateValue(props.idx, control.id, event.target.value) }"
           >
           </v-text-field>
         </v-col>
@@ -28,7 +32,11 @@
 </template>
 
 <script setup lang="ts">
+import { useModuleStore } from '../stores/ModuleStore'
+
 import Jack from './Jack.vue'
+
+const moduleStore = useModuleStore()
 
 const props = defineProps([
   'name',

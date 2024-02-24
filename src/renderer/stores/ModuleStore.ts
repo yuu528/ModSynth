@@ -25,10 +25,12 @@ export const useModuleStore = defineStore('module', () => {
 			name: 'Volume',
 			controls: [
 				{
+					id: 'volume',
 					name: 'Volume',
 					min: 0,
-					max: 100,
-					value: 50
+					max: 2,
+					step: 0.1,
+					value: 0.5
 				}
 			],
 			jacks: [
@@ -46,9 +48,11 @@ export const useModuleStore = defineStore('module', () => {
 			name: 'Osc',
 			controls: [
 				{
+					id: 'frequency',
 					name: 'Freq',
 					min: 1,
 					max: 16e3,
+					step: 1,
 					value: 1e3
 				}
 			],
@@ -66,17 +70,20 @@ export const useModuleStore = defineStore('module', () => {
 	const audioCtx = ref(new window.AudioContext())
 
 	function add(module) {
+		let defaultVal
 		switch(module.id) {
 			case 'volume':
+				defaultVal = module.controls.find(control => control.id == 'volume').value
 				module.input = audioCtx.value.createGain()
-				module.input.gain.setValueAtTime(0.1, audioCtx.value.currentTime)
+				module.input.gain.setValueAtTime(defaultVal, audioCtx.value.currentTime)
 				module.output = module.input
 				break
 
 			case 'oscillator':
+				defaultVal = module.controls.find(control => control.id == 'frequency').value
 				module.output = audioCtx.value.createOscillator()
 				module.output.type = "sine"
-				module.output.frequency.setValueAtTime(1e3, audioCtx.value.currentTime)
+				module.output.frequency.setValueAtTime(defaultVal, audioCtx.value.currentTime)
 				module.output.start()
 				break
 		}
@@ -91,6 +98,28 @@ export const useModuleStore = defineStore('module', () => {
 		nextTick(() => {
 			cableStore.updateCables()
 		})
+	}
+
+	function updateValue(idx, id, value) {
+		const module = enabledModules.value[idx]
+
+		switch(module.id) {
+			case 'volume':
+				switch(id) {
+					case 'volume':
+						module.input.gain.setValueAtTime(value, audioCtx.value.currentTime)
+						break
+				}
+				break
+
+			case 'oscillator':
+				switch(id) {
+					case 'frequency':
+						module.output.frequency.setValueAtTime(value, audioCtx.value.currentTime)
+						break
+				}
+				break
+		}
 	}
 
 	function baseDragStart(event) {
@@ -182,7 +211,7 @@ export const useModuleStore = defineStore('module', () => {
 
 	return {
 		mimes, types, modules, enabledModules, audioCtx,
-		add, remove,
+		add, remove, updateValue,
 		baseDragStart, baseDragOver, baseDrop,
 		dragStart, dragOver, dragEnd, drop
 	}
