@@ -9,6 +9,7 @@
       <v-row>
         <v-col v-for="control in props.controls" :key="control.name">
           <v-text-field
+            v-if="control.component === 'VTextField'"
             type="number"
             density="compact"
             v-model="control.value"
