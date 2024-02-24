@@ -80,9 +80,6 @@ export const useCableStore = defineStore('cable', () => {
 			cable.j1 !== p && cable.j2 !== p
 		)
 
-		console.log(removed)
-		console.log(cables.value)
-
 		for(const cable of removed) {
 			const jack1 = getJack(cable.j1)
 			const jack2 = getJack(cable.j2)
