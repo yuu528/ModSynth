@@ -20,7 +20,7 @@
       </v-row>
       <v-row>
         <v-col v-for="jack in props.jacks" :key="jack.name">
-          <Jack :name="jack.name" />
+          <Jack :name="jack.name" :dataKey="`m${props.idx}.${jack.name}`" />
         </v-col>
       </v-row>
     </v-container>
@@ -33,6 +33,7 @@ import Jack from './Jack.vue'
 const props = defineProps([
   'name',
   'controls',
-  'jacks'
+  'jacks',
+  'idx'
 ])
 </script>

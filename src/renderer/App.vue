@@ -4,31 +4,31 @@
       <v-app-bar-title>ModSynth</v-app-bar-title>
     </v-app-bar>
 
-    <v-navigation-drawer
-      permanent
-      @dragover="baseDragOver"
-      @drop="baseDrop"
-    >
-      <v-container
+    <v-main class="d-flex h-100">
+      <v-sheet
+        border
+        @dragover="baseDragOver"
+        @drop="baseDrop"
       >
-        <v-row>
-          <v-col v-for="(module, id) in modules" :key="id">
-            <v-sheet>
-              <Module
-                draggable="true"
-                :data-id="id"
-                :name="module.name"
-                :controls="module.controls"
-                :jacks="module.jacks"
-                @dragstart="baseDragStart"
-              />
-            </v-sheet>
-          </v-col>
-        </v-row>
-      </v-container>
-    </v-navigation-drawer>
-
-    <v-main class="d-flex ma-2 h-100">
+        <v-container
+        >
+          <v-row>
+            <v-col v-for="(module, id) in modules" :key="id">
+              <v-sheet>
+                <Module
+                  draggable="true"
+                  :data-id="id"
+                  :key="id"
+                  :name="module.name"
+                  :controls="module.controls"
+                  :jacks="module.jacks"
+                  @dragstart="baseDragStart"
+                />
+              </v-sheet>
+            </v-col>
+          </v-row>
+        </v-container>
+      </v-sheet>
       <v-sheet
         class="flex-grow-1 h-screen"
         @dragover="dragOver"
@@ -37,9 +37,11 @@
         <Module
           v-for="(module, idx) in enabledModules"
           draggable="true"
+          class="enabledModule"
           :key="idx"
           :data-id="module.id"
           :data-idx="idx"
+          :idx="idx"
           :name="module.name"
           :controls="module.controls"
           :jacks="module.jacks"
@@ -52,17 +54,40 @@
         />
       </v-sheet>
       <v-sheet class="flex-shrink-1">
-        <Jack name="Output" />
+        <Jack name="Output" dataKey="master.output" />
       </v-sheet>
+      <svg
+        width="100%"
+        height="100%"
+        style="
+          position: absolute;
+          top: 0;
+          left: 0;
+          pointer-events: none;
+        "
+      >
+        <path
+          v-for="cable in cables"
+          :d="`M ${cable.p1.x} ${cable.p1.y} L ${cable.p2.x} ${cable.p2.y}`"
+          stroke="black"
+          stroke-width="2"
+        />
+      </svg>
     </v-main>
   </v-layout>
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { reactive, computed, nextTick } from 'vue'
+
+import { useCableStore } from './stores/CableStore'
 
 import Jack from './components/Jack.vue'
 import Module from './components/Module.vue'
+
+const cableStore = useCableStore()
+
+const cables = computed(() => cableStore.cablesData)
 
 const modules = {
   volume: {
@@ -125,6 +150,9 @@ function baseDrop(event) {
     if(event.dataTransfer.getData(mimes.moduleType) == types.enabled) {
       const idx = event.dataTransfer.getData(mimes.moduleIdx)
       enabledModules.splice(idx, 1)
+      nextTick(() => {
+        cableStore.updateCables()
+      })
     }
   }
 }
@@ -149,7 +177,7 @@ function dragOver(event) {
 }
 
 function drop(event) {
-  if(event.dataTransfer.types.includes(mimes.moduleType)) {
+  if(event.dataTransfer.types.includes(mimes.moduleType) && !event.dataTransfer.types.includes(cableStore.mimes.cableId1)) {
     const offsetX = event.dataTransfer.getData(mimes.moduleDragOffsetX)
     const offsetY = event.dataTransfer.getData(mimes.moduleDragOffsetY)
 
@@ -166,7 +194,6 @@ function drop(event) {
         }
 
         enabledModules.push(module)
-        console.log(enabledModules)
         break
 
       case types.enabled:
@@ -176,6 +203,10 @@ function drop(event) {
           x: event.clientX - offsetX,
           y: event.clientY - offsetY
         }
+
+        nextTick(() => {
+          cableStore.updateCables()
+        })
         break
     }
   }
