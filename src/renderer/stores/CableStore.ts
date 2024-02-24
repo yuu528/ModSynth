@@ -92,7 +92,7 @@ export const useCableStore = defineStore('cable', {
 			})
 		},
 		dragStart(event) {
-			if(event.target.closest('.enabledModule') !== null) {
+			if(event.target.closest('.enabledModule') !== null || event.target.dataset.id.indexOf('master') !== -1) {
 				event.dataTransfer.setData(this.mimes.cableId1, event.target.dataset.id)
 			}
 		},
