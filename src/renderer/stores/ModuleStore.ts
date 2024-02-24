@@ -96,11 +96,11 @@ export const useModuleStore = defineStore('module', () => {
 		event.dataTransfer.setData(mimes.value.moduleIdx, event.target.dataset.idx)
 		event.dataTransfer.setData(
 			mimes.value.moduleDragOffsetX,
-			event.clientX - event.target.getBoundingClientRect().left
+			event.clientX - event.target.getBoundingClientRect().left - window.scrollX
 		)
 		event.dataTransfer.setData(
 			mimes.value.moduleDragOffsetY,
-			event.clientY - event.target.getBoundingClientRect().top
+			event.clientY - event.target.getBoundingClientRect().top - window.scrollY
 		)
 	}
 

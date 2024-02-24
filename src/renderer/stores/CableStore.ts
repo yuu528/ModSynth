@@ -65,8 +65,8 @@ export const useCableStore = defineStore('cable', {
 			const pos = this.getJack(id).getBoundingClientRect()
 
 			return {
-				x: pos.left + pos.width / 2,
-				y: pos.top + pos.height / 2
+				x: pos.left + pos.width / 2 + window.scrollX,
+				y: pos.top + pos.height / 2 + window.scrollY
 			}
 		},
 		updateCables() {
