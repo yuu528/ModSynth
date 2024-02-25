@@ -87,6 +87,15 @@ export const useModuleStore = defineStore('module', () => {
 					step: 1e3,
 					value: 16e3,
 					si: true
+				},
+				{
+					id: 'scopeSize',
+					name: 'Scope Size',
+					component: 'Knob',
+					min: 1,
+					max: 16,
+					step: 1,
+					value: 8
 				}
 			],
 			monitors: [
@@ -146,7 +155,15 @@ export const useModuleStore = defineStore('module', () => {
 					if(canvas !== null) {
 						const ctx = canvas.getContext('2d')
 
-						const len = module.input.frequencyBinCount / 8
+						const scopeSizeControl = module.controls.find(control => control.id === 'scopeSize')
+						const maxScopeSize = scopeSizeControl.max
+						let scopeSize = scopeSizeControl.value
+
+						if(module.monitors[0].scopeSize !== undefined) {
+							scopeSize = module.monitors[0].scopeSize
+						}
+
+						const len = module.input.frequencyBinCount / (maxScopeSize - scopeSize + 1)
 						const sliceWidth = (canvas.width) / len
 
 						const data = new Uint8Array(len)
@@ -279,7 +296,7 @@ export const useModuleStore = defineStore('module', () => {
 							module.input.gain.setValueAtTime(value, audioCtx.value.currentTime)
 						break
 					}
-				break
+					break
 
 				case 'oscillator':
 					switch(id) {
@@ -291,15 +308,19 @@ export const useModuleStore = defineStore('module', () => {
 							module.output.frequency.setValueAtTime(value, audioCtx.value.currentTime)
 						break
 					}
-				break
+					break
 
 				case 'monitor':
 					switch(id) {
 						case 'fftMax':
 							module.monitors[1].fftMax = value
-						break
+							break
+
+						case 'scopeSize':
+							module.monitors[0].scopeSize = value
+							break
 					}
-				break
+					break
 			}
 		}
 	}
