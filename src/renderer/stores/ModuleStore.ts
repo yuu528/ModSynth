@@ -164,7 +164,7 @@ export const useModuleStore = defineStore('module', () => {
 						}
 
 						const len = module.input.frequencyBinCount / (maxScopeSize - scopeSize + 1)
-						const sliceWidth = (canvas.width) / len
+						const sliceWidth = (canvas.width) / (len - 2)
 
 						const data = new Uint8Array(len)
 						module.input.getByteTimeDomainData(data)
@@ -186,7 +186,7 @@ export const useModuleStore = defineStore('module', () => {
 							}
 						}
 
-						ctx.lineTo(canvas.width, canvas.height / 2 + 2)
+						ctx.lineTo(canvas.width + ctx.lineWidth, canvas.height / 2)
 
 						ctx.stroke()
 					}
