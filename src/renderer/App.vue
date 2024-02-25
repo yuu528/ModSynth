@@ -4,7 +4,7 @@
       <v-app-bar-title>ModSynth</v-app-bar-title>
     </v-app-bar>
 
-    <v-main class="d-flex h-100">
+    <v-main class="d-flex">
       <v-sheet
         border
         @dragover="moduleStore.baseDragOver"
@@ -24,7 +24,7 @@
         </v-sheet>
       </v-sheet>
       <v-sheet
-        class="flex-grow-1 h-screen"
+        class="flex-grow-1"
         @dragover="moduleStore.dragOver"
         @drop="moduleStore.drop"
       >
