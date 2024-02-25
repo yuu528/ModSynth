@@ -271,34 +271,36 @@ export const useModuleStore = defineStore('module', () => {
 	function updateValue(idx, id, value) {
 		const module = enabledModules.value[idx]
 
-		switch(module.id) {
-			case 'volume':
-				switch(id) {
-					case 'volume':
-						module.input.gain.setValueAtTime(value, audioCtx.value.currentTime)
-					break
-				}
-			break
+		if(module !== undefined) {
+			switch(module.id) {
+				case 'volume':
+					switch(id) {
+						case 'volume':
+							module.input.gain.setValueAtTime(value, audioCtx.value.currentTime)
+						break
+					}
+				break
 
-			case 'oscillator':
-				switch(id) {
-					case 'type':
-						module.output.type = value
-					break
+				case 'oscillator':
+					switch(id) {
+						case 'type':
+							module.output.type = value
+						break
 
-					case 'frequency':
-						module.output.frequency.setValueAtTime(value, audioCtx.value.currentTime)
-					break
-				}
-			break
+						case 'frequency':
+							module.output.frequency.setValueAtTime(value, audioCtx.value.currentTime)
+						break
+					}
+				break
 
-			case 'monitor':
-				switch(id) {
-					case 'fftMax':
-						module.monitors[1].fftMax = value
-					break
-				}
-			break
+				case 'monitor':
+					switch(id) {
+						case 'fftMax':
+							module.monitors[1].fftMax = value
+						break
+					}
+				break
+			}
 		}
 	}
 
