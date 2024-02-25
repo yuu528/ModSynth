@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 
 import { useCableStore } from './CableStore'
 
+import { NumberUtil } from '../scripts/NumberUtil'
 
 export const useModuleStore = defineStore('module', () => {
 	const cableStore = useCableStore()
@@ -76,6 +77,17 @@ export const useModuleStore = defineStore('module', () => {
 		},
 		monitor: {
 			name: 'Monitor',
+			controls: [
+				{
+					id: 'fftMax',
+					name: 'FFT Max',
+					component: 'Knob',
+					min: 1e3,
+					max: 16e3,
+					step: 1e3,
+					value: 16e3
+				}
+			],
 			monitors: [
 				{
 					id: 'oscilloscope',
@@ -170,10 +182,29 @@ export const useModuleStore = defineStore('module', () => {
 						const ctx = canvas.getContext('2d')
 
 						const len = module.input.frequencyBinCount
-						const sliceWidth = (canvas.width) / len
 
 						const data = new Uint8Array(len)
 						module.input.getByteFrequencyData(data)
+
+						const freqStep = audioCtx.value.sampleRate / module.input.fftSize
+
+						let fftMax = module.controls.find(control => control.id === 'fftMax').value
+
+						if(module.monitors[1].fftMax !== undefined) {
+							fftMax = module.monitors[1].fftMax
+						}
+						const maxFreq = Math.min(fftMax, freqStep * len)
+
+						const sliceWidth = (canvas.width) / (maxFreq / freqStep)
+
+						const rulerMax = NumberUtil.getNiceRoundNumber(maxFreq, 3)
+						const rulerCount = 6
+						const rulerStep = NumberUtil.getNiceRoundNumber(rulerMax / rulerCount)
+
+						let rulers = []
+						for(let i = 0; i <= rulerMax; i += rulerStep) {
+							rulers.push(i)
+						}
 
 						ctx.fillStyle = 'rgb(0, 0, 0)'
 						ctx.fillRect(0, 0, canvas.width, canvas.height)
@@ -181,12 +212,34 @@ export const useModuleStore = defineStore('module', () => {
 						ctx.lineWidth = 2
 						ctx.strokeStyle = 'rgb(255, 255, 255)'
 
+						ctx.fillStyle = 'rgb(255, 255, 255)'
+						ctx.font = '8px sans-serif'
+
 						ctx.beginPath()
 
-						for(let i = 0, x = 0; i < len; i++, x += sliceWidth) {
+						for(let i = 0, x = 0, r = 0; i < len && i * freqStep <= maxFreq; i++, x += sliceWidth) {
 							const y = ((256 - data[i]) / 256.0) * canvas.height
 							ctx.moveTo(x, canvas.height)
 							ctx.lineTo(x, y)
+
+							if(i * freqStep > rulers[r]) {
+								const rulerK = rulers[r] / 1e3
+								let text
+								if(rulerK >= 1) {
+									text = `${rulerK}k`
+								} else {
+									text = rulers[r]
+								}
+								const meas = ctx.measureText(text)
+								const textPosX = Math.min(Math.max(0, x - meas.width / 2), canvas.width - meas.width)
+								const textPosY = canvas.height - (meas.actualBoundingBoxAscent + meas.actualBoundingBoxDescent)
+								const linePos = canvas.height - 5
+
+								ctx.fillText(text, textPosX, textPosY)
+								ctx.moveTo(x, canvas.height)
+								ctx.lineTo(x, linePos)
+								r++
+							}
 						}
 
 						ctx.stroke()
@@ -227,6 +280,14 @@ export const useModuleStore = defineStore('module', () => {
 
 					case 'frequency':
 						module.output.frequency.setValueAtTime(value, audioCtx.value.currentTime)
+						break
+				}
+				break
+
+			case 'monitor':
+				switch(id) {
+					case 'fftMax':
+						module.monitors[1].fftMax = value
 						break
 				}
 				break
