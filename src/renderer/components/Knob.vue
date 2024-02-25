@@ -28,18 +28,23 @@ function getDecPointLen(n: number) {
 	return String(n).split('.')[1].length
 }
 
+function setModelValue(value: number) {
+	model.value = value
+	props.change(value)
+}
+
 function stepUp() {
 	const len = Math.pow(10, getDecPointLen(props.step))
-	model.value = Math.round(
+	setModelValue(Math.round(
 		Math.min(model.value + props.step, props.max) * len
-	) / len
+	) / len)
 }
 
 function stepDown() {
 	const len = Math.pow(10, getDecPointLen(props.step))
-	model.value = Math.round(
+	setModelValue(Math.round(
 		Math.max(model.value - props.step, props.min) * len
-	) / len
+	) / len)
 }
 
 function calcDeg() {
@@ -50,10 +55,8 @@ function wheel(event) {
 	event.preventDefault()
 	if (0 < event.deltaY) {
 		stepDown()
-		props.change(model.value)
 	} else if(event.deltaY < 0) {
 		stepUp()
-		props.change(model.value)
 	}
 }
 
@@ -66,8 +69,7 @@ function keypress(event) {
 		if(isNaN(event.target.innerText)) {
 			event.target.innerText = model.value
 		} else if(props.min <= value && value <= props.max) {
-			model.value = value
-			props.change(value)
+			setModelValue(value)
 		} else {
 			event.target.innerText = model.value
 		}
