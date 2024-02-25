@@ -7,7 +7,11 @@
         </v-col>
       </v-row>
       <v-row>
-        <v-col v-for="control in props.controls" :key="control.name">
+        <v-col
+          v-for="control in props.controls"
+          :key="control.name"
+          :cols="getCols(control.component)"
+        >
           <v-text-field
             v-if="control.component === 'VTextField'"
             type="number"
@@ -21,6 +25,16 @@
             @change="event => { moduleStore.updateValue(props.idx, control.id, event.target.value) }"
           >
           </v-text-field>
+          <v-select
+            v-if="control.component === 'VSelect'"
+            density="compact"
+            v-model="control.value"
+            :class="control.id"
+            :label="control.name"
+            :items="control.items"
+            @update:modelValue="event => { moduleStore.updateValue(props.idx, control.id, event) }"
+          >
+          </v-select>
           <Knob
             v-if="control.component === 'Knob'"
             v-model="control.value"
@@ -56,4 +70,20 @@ const props = defineProps([
   'jacks',
   'idx'
 ])
+
+function getCols(component: string) {
+  switch(component) {
+    case 'VTextField':
+      return 12
+
+    case 'VSelect':
+      return 12
+
+    case 'Knob':
+      return 3
+
+    default:
+      return 12
+  }
+}
 </script>

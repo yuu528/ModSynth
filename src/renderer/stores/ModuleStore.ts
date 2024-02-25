@@ -49,6 +49,15 @@ export const useModuleStore = defineStore('module', () => {
 			name: 'Osc',
 			controls: [
 				{
+					id: 'type',
+					name: 'Type',
+					component: 'VSelect',
+					items: [
+						'sine', 'square', 'sawtooth', 'triangle'
+					],
+					value: 'sine'
+				},
+				{
 					id: 'frequency',
 					name: 'Freq',
 					component: 'Knob',
@@ -103,6 +112,7 @@ export const useModuleStore = defineStore('module', () => {
 	}
 
 	function updateValue(idx, id, value) {
+		console.log(idx, id, value)
 		const module = enabledModules.value[idx]
 
 		switch(module.id) {
@@ -116,6 +126,10 @@ export const useModuleStore = defineStore('module', () => {
 
 			case 'oscillator':
 				switch(id) {
+					case 'type':
+						module.output.type = value
+						break
+
 					case 'frequency':
 						module.output.frequency.setValueAtTime(value, audioCtx.value.currentTime)
 						break
@@ -176,7 +190,6 @@ export const useModuleStore = defineStore('module', () => {
 	}
 
 	function drop(event) {
-					console.log(enabledModules.value)
 		if(event.dataTransfer.types.includes(mimes.value.moduleType) && !event.dataTransfer.types.includes(cableStore.mimes.cableId1)) {
 			const offsetX = event.dataTransfer.getData(mimes.value.moduleDragOffsetX)
 			const offsetY = event.dataTransfer.getData(mimes.value.moduleDragOffsetY)
