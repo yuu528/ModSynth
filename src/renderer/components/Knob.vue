@@ -1,19 +1,21 @@
 <template>
-	<div class="knob" @wheel="wheel" :style="{transform: `rotate(${calcDeg()}deg)`}">
-		<div class="mark">
+	<v-sheet>
+		<div class="knob" @wheel="wheel" :style="{transform: `rotate(${calcDeg()}deg)`}">
+			<div class="mark">
+			</div>
+			<div
+				class="value"
+				:style="{transform: `rotate(${-calcDeg()}deg)`}"
+				contenteditable="true"
+				@keypress="keypress"
+			>
+				{{ value }}
+			</div>
 		</div>
-		<div
-			class="value"
-			:style="{transform: `rotate(${-calcDeg()}deg)`}"
-			contenteditable="true"
-			@keypress="keypress"
-		>
-			{{ value }}
+		<div class="text-center text-caption label">
+			{{ props.label }}
 		</div>
-	</div>
-	<div class="text-center text-caption label">
-		{{ props.label }}
-	</div>
+	</v-sheet>
 </template>
 
 <script setup lang="ts">
