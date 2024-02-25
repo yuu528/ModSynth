@@ -21,7 +21,6 @@ export class NumberUtil {
 			offset = Math.pow(10, count - 1)
 		}
 
-		console.log(Math.floor(value / offset) * offset)
 		return Math.floor(value / offset) * offset
 	}
 }

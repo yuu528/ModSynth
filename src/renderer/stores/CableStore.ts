@@ -155,7 +155,7 @@ export const useCableStore = defineStore('cable', () => {
 			getJack(cable.j1) !== undefined && getJack(cable.j2) !== undefined
 		)
 
-		cablesData.value = cables.value.map(cable => {
+		const newData = cables.value.map(cable => {
 			const p1 = getJackPos(cable.j1)
 			const p2 = getJackPos(cable.j2)
 
@@ -170,6 +170,11 @@ export const useCableStore = defineStore('cable', () => {
 				}
 			}
 		})
+
+		const maxY = Math.max(...newData.map(cable => Math.max(cable.p1.y, cable.p2.y)))
+		document.getElementById('cable-svg').setAttribute('height', `${maxY}px`)
+
+		cablesData.value = newData
 	}
 
 	function dragStart(event) {

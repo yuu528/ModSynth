@@ -58,11 +58,12 @@
       <svg
         width="100%"
         height="100%"
+        id="cable-svg"
         style="
-        position: absolute;
-        top: 0;
-        left: 0;
-        pointer-events: none;
+          position: absolute;
+          top: 0;
+          left: 0;
+          pointer-events: none;
         "
       >
         <path
