@@ -172,7 +172,9 @@ export const useCableStore = defineStore('cable', () => {
 		})
 
 		const maxY = Math.max(...newData.map(cable => Math.max(cable.p1.y, cable.p2.y)))
-		document.getElementById('cable-svg').setAttribute('height', `${maxY}px`)
+		if(isFinite(maxY)) {
+			document.getElementById('cable-svg').setAttribute('height', `${maxY}px`)
+		}
 
 		cablesData.value = newData
 	}
