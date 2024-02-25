@@ -11,16 +11,27 @@
 			{{ value }}
 		</div>
 	</div>
+	<div class="text-center text-caption label">
+		{{ props.label }}
+	</div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
+
+import { NumberUtil } from '../scripts/util/NumberUtil'
+
 const model = defineModel()
 const props = defineProps([
-	'min', 'max', 'step', 'change'
+	'min', 'max', 'step', 'change', 'label', 'si'
 ])
 
-const value = computed(() => model.value)
+const value = computed(() => {
+	if(props.si) {
+		return NumberUtil.toSI(model.value)
+	}
+	return model.value
+})
 
 function getDecPointLen(n: number) {
 	const split = String(n).split('.')
@@ -100,5 +111,10 @@ function keypress(event) {
 	font-size: 12px;
 	width: 100%;
 	text-align: center;
+}
+
+.label {
+	width: 30px;
+	overflow-wrap: anywhere;
 }
 </style>

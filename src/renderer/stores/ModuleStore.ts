@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 
 import { useCableStore } from './CableStore'
 
-import { NumberUtil } from '../scripts/NumberUtil'
+import { NumberUtil } from '../scripts/util/NumberUtil'
 
 export const useModuleStore = defineStore('module', () => {
 	const cableStore = useCableStore()
@@ -85,7 +85,8 @@ export const useModuleStore = defineStore('module', () => {
 					min: 1e3,
 					max: 16e3,
 					step: 1e3,
-					value: 16e3
+					value: 16e3,
+					si: true
 				}
 			],
 			monitors: [

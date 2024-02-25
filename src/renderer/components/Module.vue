@@ -56,6 +56,7 @@
             :min="control.min"
             :max="control.max"
             :step="control.step"
+            :si="control.si"
             :change="value => { moduleStore.updateValue(props.idx, control.id, value) }"
           />
         </v-col>
