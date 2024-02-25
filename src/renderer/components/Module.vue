@@ -6,6 +6,19 @@
           {{ props.name }}
         </v-col>
       </v-row>
+      <v-row v-for="monitor in props.monitors" :key="monitor.id">
+        <v-col cols="12">
+          <v-sheet>
+            <div class="text-center">{{ monitor.name }}</div>
+            <canvas
+              :id="`m${props.idx}.monitor.${monitor.id}`"
+              :width="monitor.width"
+              :height="monitor.height"
+              style="background-color: black;"
+            ></canvas>
+          </v-sheet>
+        </v-col>
+      </v-row>
       <v-row>
         <v-col
           v-for="control in props.controls"
@@ -67,6 +80,7 @@ const moduleStore = useModuleStore()
 const props = defineProps([
   'name',
   'controls',
+  'monitors',
   'jacks',
   'idx'
 ])

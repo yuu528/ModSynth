@@ -73,6 +73,29 @@ export const useModuleStore = defineStore('module', () => {
 					type: 'output'
 				}
 			]
+		},
+		monitor: {
+			name: 'Monitor',
+			monitors: [
+				{
+					id: 'oscilloscope',
+					name: 'Oscilloscope',
+					width: 200,
+					height: 80
+				},
+				{
+					id: 'fft',
+					name: 'FFT',
+					width: 200,
+					height: 80
+				}
+			],
+			jacks: [
+				{
+					name: 'Input',
+					type: 'input'
+				}
+			]
 		}
 	})
 
@@ -81,6 +104,8 @@ export const useModuleStore = defineStore('module', () => {
 	const audioCtx = ref(new window.AudioContext())
 
 	function add(module) {
+		const idx = enabledModules.value.push(module) - 1
+
 		let defaultVal
 		switch(module.id) {
 			case 'volume':
@@ -97,9 +122,80 @@ export const useModuleStore = defineStore('module', () => {
 				module.output.frequency.setValueAtTime(defaultVal, audioCtx.value.currentTime)
 				module.output.start()
 				break
-		}
 
-		enabledModules.value.push(module)
+			case 'monitor':
+				module.input = audioCtx.value.createAnalyser()
+				module.input.fftSize = 2048
+				module.monitors[0].draw = () => {
+					requestAnimationFrame(module.monitors[0].draw)
+					const canvas = document.getElementById(`m${idx}.monitor.${module.monitors[0].id}`)
+
+					if(canvas !== null) {
+						const ctx = canvas.getContext('2d')
+
+						const len = module.input.frequencyBinCount / 8
+						const sliceWidth = (canvas.width) / len
+
+						const data = new Uint8Array(len)
+						module.input.getByteTimeDomainData(data)
+
+						ctx.fillStyle = 'rgb(0, 0, 0)'
+						ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+						ctx.lineWidth = 2
+						ctx.strokeStyle = 'rgb(255, 255, 255)'
+
+						ctx.beginPath()
+
+						for(let i = 0, x = 0; i < len; i++, x += sliceWidth) {
+							const y = (data[i] / 128.0 * canvas.height) / 2
+							if(i === 0) {
+								ctx.moveTo(x, y)
+							} else {
+								ctx.lineTo(x, y)
+							}
+						}
+
+						ctx.lineTo(canvas.width, canvas.height / 2 + 2)
+
+						ctx.stroke()
+					}
+				}
+
+				module.monitors[1].draw = () => {
+					requestAnimationFrame(module.monitors[1].draw)
+					const canvas = document.getElementById(`m${idx}.monitor.${module.monitors[1].id}`)
+
+					if(canvas !== null) {
+						const ctx = canvas.getContext('2d')
+
+						const len = module.input.frequencyBinCount
+						const sliceWidth = (canvas.width) / len
+
+						const data = new Uint8Array(len)
+						module.input.getByteFrequencyData(data)
+
+						ctx.fillStyle = 'rgb(0, 0, 0)'
+						ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+						ctx.lineWidth = 2
+						ctx.strokeStyle = 'rgb(255, 255, 255)'
+
+						ctx.beginPath()
+
+						for(let i = 0, x = 0; i < len; i++, x += sliceWidth) {
+							const y = ((256 - data[i]) / 256.0) * canvas.height
+							ctx.moveTo(x, canvas.height)
+							ctx.lineTo(x, y)
+						}
+
+						ctx.stroke()
+					}
+				}
+				module.monitors[0].draw()
+				module.monitors[1].draw()
+				break
+		}
 	}
 
 	function remove(idx) {
@@ -112,7 +208,6 @@ export const useModuleStore = defineStore('module', () => {
 	}
 
 	function updateValue(idx, id, value) {
-		console.log(idx, id, value)
 		const module = enabledModules.value[idx]
 
 		switch(module.id) {

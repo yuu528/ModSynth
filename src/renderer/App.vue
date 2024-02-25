@@ -17,6 +17,7 @@
             :key="id"
             :name="module.name"
             :controls="module.controls"
+            :monitors="module.monitors"
             :jacks="module.jacks"
             @dragstart="moduleStore.baseDragStart"
             @dragend="moduleStore.dragEnd"
@@ -39,6 +40,7 @@
             :idx="idx"
             :name="module.name"
             :controls="module.controls"
+            :monitors="module.monitors"
             :jacks="module.jacks"
             :style="{
               position: 'absolute',
