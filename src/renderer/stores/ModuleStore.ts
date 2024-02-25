@@ -210,7 +210,7 @@ export const useModuleStore = defineStore('module', () => {
 						ctx.fillStyle = 'rgb(0, 0, 0)'
 						ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-						ctx.lineWidth = 2
+						ctx.lineWidth = sliceWidth + 1
 						ctx.strokeStyle = 'rgb(255, 255, 255)'
 
 						ctx.fillStyle = 'rgb(255, 255, 255)'
@@ -218,11 +218,18 @@ export const useModuleStore = defineStore('module', () => {
 
 						ctx.beginPath()
 
-						for(let i = 0, x = 0, r = 0; i < len && i * freqStep <= maxFreq; i++, x += sliceWidth) {
+						for(let i = 0, x = 0; i * freqStep <= maxFreq; i++, x += sliceWidth) {
 							const y = ((256 - data[i]) / 256.0) * canvas.height
 							ctx.moveTo(x, canvas.height)
 							ctx.lineTo(x, y)
+						}
 
+						ctx.stroke()
+
+						ctx.beginPath()
+						ctx.lineWidth = 2
+
+						for(let i = 0, x = 0, r = 0; i * freqStep <= maxFreq; i++, x += sliceWidth) {
 							if(i * freqStep > rulers[r]) {
 								const rulerK = rulers[r] / 1e3
 								let text
@@ -248,7 +255,7 @@ export const useModuleStore = defineStore('module', () => {
 				}
 				module.monitors[0].draw()
 				module.monitors[1].draw()
-				break
+			break
 		}
 	}
 
@@ -269,29 +276,29 @@ export const useModuleStore = defineStore('module', () => {
 				switch(id) {
 					case 'volume':
 						module.input.gain.setValueAtTime(value, audioCtx.value.currentTime)
-						break
+					break
 				}
-				break
+			break
 
 			case 'oscillator':
 				switch(id) {
 					case 'type':
 						module.output.type = value
-						break
+					break
 
 					case 'frequency':
 						module.output.frequency.setValueAtTime(value, audioCtx.value.currentTime)
-						break
+					break
 				}
-				break
+			break
 
 			case 'monitor':
 				switch(id) {
 					case 'fftMax':
 						module.monitors[1].fftMax = value
-						break
+					break
 				}
-				break
+			break
 		}
 	}
 
@@ -374,7 +381,7 @@ export const useModuleStore = defineStore('module', () => {
 						y: event.clientY - offsetY
 					}
 
-					nextTick(() => {
+				nextTick(() => {
 						cableStore.updateCables()
 					})
 				break
