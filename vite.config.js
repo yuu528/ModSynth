@@ -17,7 +17,12 @@ const config = defineConfig({
         outDir: Path.join(__dirname, 'build', 'renderer'),
         emptyOutDir: true,
     },
-    plugins: [vuePlugin()],
+    plugins: [vuePlugin({
+        script: {
+            defineModel: true,
+            propsDestructure: true
+        }
+    })],
 });
 
 module.exports = config;

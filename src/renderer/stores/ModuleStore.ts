@@ -27,7 +27,7 @@ export const useModuleStore = defineStore('module', () => {
 				{
 					id: 'volume',
 					name: 'Volume',
-					component: 'VTextField',
+					component: 'Knob',
 					min: 0,
 					max: 2,
 					step: 0.1,
@@ -51,7 +51,7 @@ export const useModuleStore = defineStore('module', () => {
 				{
 					id: 'frequency',
 					name: 'Freq',
-					component: 'VTextField',
+					component: 'Knob',
 					min: 1,
 					max: 16e3,
 					step: 1,

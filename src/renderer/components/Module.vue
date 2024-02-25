@@ -21,6 +21,16 @@
             @change="event => { moduleStore.updateValue(props.idx, control.id, event.target.value) }"
           >
           </v-text-field>
+          <Knob
+            v-if="control.component === 'Knob'"
+            v-model="control.value"
+            :class="control.id"
+            :label="control.name"
+            :min="control.min"
+            :max="control.max"
+            :step="control.step"
+            :change="value => { moduleStore.updateValue(props.idx, control.id, value) }"
+          />
         </v-col>
       </v-row>
       <v-row>
@@ -35,6 +45,7 @@
 <script setup lang="ts">
 import { useModuleStore } from '../stores/ModuleStore'
 
+import Knob from './Knob.vue'
 import Jack from './Jack.vue'
 
 const moduleStore = useModuleStore()
