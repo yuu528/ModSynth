@@ -45,7 +45,7 @@ export const useModuleStore = defineStore('module', () => {
 					component: 'Knob',
 					min: 0,
 					max: 2,
-					step: 0.1,
+					step: 0.01,
 					value: 0.5
 				}
 			],
@@ -198,15 +198,15 @@ export const useModuleStore = defineStore('module', () => {
 					component: 'Knob',
 					min: 0,
 					max: 1,
-					step: 0.1,
+					step: 0.01,
 					value: 0.5
 				},
 				{
 					id: 'speed',
 					name: 'Speed',
 					component: 'Knob',
-					min: 0.3,
-					max: 4,
+					min: 0.1,
+					max: 16,
 					step: 0.1,
 					value: 1
 				},
