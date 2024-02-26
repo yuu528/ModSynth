@@ -92,6 +92,8 @@ export const useCableStore = defineStore('cable', () => {
 			}
 		}
 		updateCables()
+
+		return removed
 	}
 
 	function registerJack(el: HTMLElement) {

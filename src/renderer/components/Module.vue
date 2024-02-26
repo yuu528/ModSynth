@@ -46,13 +46,17 @@
             :label="control.name"
             :items="control.items"
             item-title="name"
+            item-value="value"
             variant="outlined"
             @update:modelValue="event => { moduleStore.updateValue(props.idx, control.id, event) }"
           >
             <template v-slot:selection="{ item, index }">
               <v-list-item v-bind="props">
                 <template v-slot:title>
-                  <img v-if="typeof item.raw === 'object'" :src="item.raw.image" style="height: 2em;">
+                  <template v-if="typeof item.raw === 'object'">
+                    <img v-if="'image' in item.raw" :src="item.raw.image" style="height: 2em;">
+                    <span v-else-if="'name' in item.raw">{{ item.raw.name }}</span>
+                  </template>
                   <span v-if="typeof item.raw === 'string'">{{ item.raw }}</span>
                 </template>
               </v-list-item>
@@ -60,7 +64,10 @@
             <template v-slot:item="{ props, item }">
               <v-list-item v-bind="props">
                 <template v-slot:title>
-                  <img v-if="typeof item.raw === 'object'" :src="item.raw.image" style="height: 2em;">
+                  <template v-if="typeof item.raw === 'object'">
+                    <img v-if="'image' in item.raw" :src="item.raw.image" style="height: 2em;">
+                    <span v-if="'name' in item.raw">{{ item.raw.name }}</span>
+                  </template>
                   <span v-if="typeof item.raw === 'string'">{{ item.raw }}</span>
                 </template>
               </v-list-item>

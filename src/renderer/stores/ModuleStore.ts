@@ -150,7 +150,7 @@ export const useModuleStore = defineStore('module', () => {
 				}
 			]
 		},
-		audioInput: {
+		audioPlayer: {
 			name: 'Audio Player',
 			category: moduleCategories.value.source,
 			controls: [
@@ -217,6 +217,25 @@ export const useModuleStore = defineStore('module', () => {
 					type: jackTypes.value.audioOutput
 				}
 			]
+		},
+		inputDevice: {
+			name: 'Input Device',
+			category: moduleCategories.value.source,
+			controls: [
+				{
+					id: 'device',
+					name: 'Device',
+					component: 'VSelect',
+					items: [],
+					value: ''
+				}
+			],
+			jacks: [
+				{
+					name: 'Out',
+					type: jackTypes.value.audioOutput
+				}
+			]
 		}
 	})
 
@@ -224,7 +243,19 @@ export const useModuleStore = defineStore('module', () => {
 
 	const audioCtx = ref(new window.AudioContext())
 
-	function add(module) {
+	// initialize input device list
+	const initDevices = async () => {
+		modules.value.inputDevice.controls[0].items = (await navigator.mediaDevices.enumerateDevices()).filter(device =>
+			device.kind === 'audioinput'
+			).map(device => ({
+				name: device.label,
+				value: device.deviceId
+		}))
+		modules.value.inputDevice.controls[0].value = modules.value.inputDevice.controls[0].items[0].value
+	}
+	initDevices()
+
+	async function add(module) {
 		const idx = enabledModules.value.push(module) - 1
 
 		let defaultVal
@@ -234,7 +265,7 @@ export const useModuleStore = defineStore('module', () => {
 				module.input = audioCtx.value.createGain()
 				module.input.gain.setValueAtTime(defaultVal, audioCtx.value.currentTime)
 				module.output = module.input
-				break
+			break
 
 			case 'oscillator':
 				defaultVal = module.controls.find(control => control.id == 'frequency').value
@@ -242,7 +273,7 @@ export const useModuleStore = defineStore('module', () => {
 				module.output.type = "sine"
 				module.output.frequency.setValueAtTime(defaultVal, audioCtx.value.currentTime)
 				module.output.start()
-				break
+			break
 
 			case 'monitor':
 				module.input = audioCtx.value.createAnalyser()
@@ -373,7 +404,7 @@ export const useModuleStore = defineStore('module', () => {
 				module.monitors[1].draw()
 			break
 
-			case 'audioInput':
+			case 'audioPlayer':
 				nextTick(() => {
 					const audioCtrlIdx = module.controls.findIndex(control => control.id === 'audio')
 					module.controls[audioCtrlIdx].elmId = `m${idx}.${module.controls[audioCtrlIdx].id}`
@@ -396,7 +427,20 @@ export const useModuleStore = defineStore('module', () => {
 						})
 					})
 				})
-				break
+			break
+
+			case 'inputDevice':
+				const deviceCtrlIdx = module.controls.findIndex(control => control.id === 'device')
+				module.output = audioCtx.value.createMediaStreamSource(
+					await navigator.mediaDevices.getUserMedia({
+						audio: {
+							deviceId: {
+								exact: module.controls[deviceCtrlIdx].value
+							}
+						}
+					})
+				)
+			break
 		}
 	}
 
@@ -418,35 +462,35 @@ export const useModuleStore = defineStore('module', () => {
 					switch(id) {
 						case 'volume':
 							module.input.gain.setValueAtTime(value, audioCtx.value.currentTime)
-							break
+						break
 					}
-					break
+				break
 
 				case 'oscillator':
 					switch(id) {
 						case 'type':
 							module.output.type = value
-							break
+						break
 
 						case 'frequency':
 							module.output.frequency.setValueAtTime(value, audioCtx.value.currentTime)
-							break
+						break
 					}
-					break
+				break
 
 				case 'monitor':
 					switch(id) {
 						case 'fftMax':
 							module.monitors[1].fftMax = value
-							break
+						break
 
 						case 'scopeSize':
 							module.monitors[0].scopeSize = value
-							break
+						break
 					}
-					break
+				break
 
-				case 'audioInput':
+				case 'audioPlayer':
 					const audioElm = module.output.mediaElement
 
 					switch(id) {
@@ -457,34 +501,34 @@ export const useModuleStore = defineStore('module', () => {
 							switch(value.type) {
 								case 'canplay':
 									module.controls[playCtrlIdx].disabled = false
-									break
+								break
 
 								case 'loadedmetadata':
 									module.controls[seekCtrlIdx].max = value.target.duration
-									break
+								break
 
 								case 'pause':
 									module.controls[playCtrlIdx].value = 0
-									break
+								break
 
 								case 'play':
 									module.controls[playCtrlIdx].value = 1
-									break
+								break
 
 								case 'timeupdate':
 									module.controls[seekCtrlIdx].value = value.target.currentTime
-									break
+								break
 							}
-							break
+						break
 
 						case 'file':
 							audioElm.src = URL.createObjectURL(value)
 							audioElm.load()
-							break
+						break
 
 						case 'seek':
 							audioElm.currentTime = value
-							break
+						break
 
 						case 'play':
 							if(value) {
@@ -492,21 +536,44 @@ export const useModuleStore = defineStore('module', () => {
 							} else {
 								audioElm.pause()
 							}
-							break
+						break
 
 						case 'volume':
 							audioElm.volume = value
-							break
+						break
 
 						case 'speed':
 							audioElm.playbackRate = value
-							break
+						break
 
 						case 'pitchCor':
 							audioElm.preservesPitch = value
-							break
+						break
 					}
-					break
+				break
+
+				case 'inputDevice':
+					switch(id) {
+						case 'device':
+							const newStream = await navigator.mediaDevices.getUserMedia({
+								audio: {
+									deviceId: {
+										exact: value
+									}
+								}
+							})
+
+							const jackId = `m${idx}.Out`
+							const removed = cableStore.remove(jackId)
+
+							module.output = audioCtx.value.createMediaStreamSource(newStream)
+
+							for(const cable of removed) {
+								cableStore.add(cable.j1, cable.j2)
+							}
+						break
+					}
+				break
 			}
 		}
 	}
