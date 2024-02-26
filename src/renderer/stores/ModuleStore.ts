@@ -16,9 +16,16 @@ export const useModuleStore = defineStore('module', () => {
 		moduleDragOffsetY: 'application/msmodule.doy'
 	})
 
-	const types = ref({
+	const moduleTypes = ref({
 		base: 'base',
 		enabled: 'enabled'
+	})
+
+	const jackTypes = ref({
+		audioInput: 'audioInput',
+		audioOutput: 'audioOutput',
+		cvInput: 'cvInput',
+		cvOutput: 'cvOutput'
 	})
 
 	const modules = ref({
@@ -38,11 +45,11 @@ export const useModuleStore = defineStore('module', () => {
 			jacks: [
 				{
 					name: 'Input',
-					type: 'input'
+					type: jackTypes.value.audioInput
 				},
 				{
 					name: 'Output',
-					type: 'output'
+					type: jackTypes.value.audioOutput
 				}
 			]
 		},
@@ -71,7 +78,7 @@ export const useModuleStore = defineStore('module', () => {
 			jacks: [
 				{
 					name: 'Output',
-					type: 'output'
+					type: jackTypes.value.audioOutput
 				}
 			]
 		},
@@ -115,7 +122,7 @@ export const useModuleStore = defineStore('module', () => {
 			jacks: [
 				{
 					name: 'Input',
-					type: 'input'
+					type: jackTypes.value.audioInput
 				}
 			]
 		}
@@ -294,7 +301,7 @@ export const useModuleStore = defineStore('module', () => {
 					switch(id) {
 						case 'volume':
 							module.input.gain.setValueAtTime(value, audioCtx.value.currentTime)
-						break
+							break
 					}
 					break
 
@@ -302,11 +309,11 @@ export const useModuleStore = defineStore('module', () => {
 					switch(id) {
 						case 'type':
 							module.output.type = value
-						break
+							break
 
 						case 'frequency':
 							module.output.frequency.setValueAtTime(value, audioCtx.value.currentTime)
-						break
+							break
 					}
 					break
 
@@ -327,7 +334,7 @@ export const useModuleStore = defineStore('module', () => {
 
 	function baseDragStart(event) {
 		event.dataTransfer.setData(mimes.value.moduleId, event.target.dataset.id)
-		event.dataTransfer.setData(mimes.value.moduleType, types.value.base)
+		event.dataTransfer.setData(mimes.value.moduleType, moduleTypes.value.base)
 		event.dataTransfer.setData(
 			mimes.value.moduleDragOffsetX,
 			event.clientX - event.target.getBoundingClientRect().left - window.scrollX
@@ -346,7 +353,7 @@ export const useModuleStore = defineStore('module', () => {
 
 	function baseDrop(event) {
 		if(event.dataTransfer.types.includes(mimes.value.moduleType)) {
-			if(event.dataTransfer.getData(mimes.value.moduleType) == types.value.enabled) {
+			if(event.dataTransfer.getData(mimes.value.moduleType) == moduleTypes.value.enabled) {
 				const idx = event.dataTransfer.getData(mimes.value.moduleIdx)
 				remove(idx)
 			}
@@ -354,7 +361,7 @@ export const useModuleStore = defineStore('module', () => {
 	}
 
 	function dragStart(event) {
-		event.dataTransfer.setData(mimes.value.moduleType, types.value.enabled)
+		event.dataTransfer.setData(mimes.value.moduleType, moduleTypes.value.enabled)
 		event.dataTransfer.setData(mimes.value.moduleIdx, event.target.dataset.idx)
 		event.dataTransfer.setData(
 			mimes.value.moduleDragOffsetX,
@@ -382,7 +389,7 @@ export const useModuleStore = defineStore('module', () => {
 			const offsetY = event.dataTransfer.getData(mimes.value.moduleDragOffsetY)
 
 			switch(event.dataTransfer.getData(mimes.value.moduleType)) {
-				case types.value.base:
+				case moduleTypes.value.base:
 					const id = event.dataTransfer.getData(mimes.value.moduleId)
 
 					let module = structuredClone(toRaw(modules.value[id]))
@@ -396,7 +403,7 @@ export const useModuleStore = defineStore('module', () => {
 					add(module)
 				break
 
-				case types.value.enabled:
+				case moduleTypes.value.enabled:
 					const idx = event.dataTransfer.getData(mimes.value.moduleIdx)
 
 					enabledModules.value[idx].pos = {
@@ -413,7 +420,7 @@ export const useModuleStore = defineStore('module', () => {
 	}
 
 	return {
-		mimes, types, modules, enabledModules, audioCtx,
+		mimes, moduleTypes, jackTypes, modules, enabledModules, audioCtx,
 		add, remove, updateValue,
 		baseDragStart, baseDragOver, baseDrop,
 		dragStart, dragOver, dragEnd, drop

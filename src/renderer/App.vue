@@ -53,7 +53,7 @@
         </template>
       </v-sheet>
       <v-sheet class="flex-shrink-1">
-        <Jack name="Output" dataKey="master.output" dataType="input" />
+        <Jack name="Speaker" dataKey="master.output" :dataType="moduleStore.jackTypes.audioInput" />
       </v-sheet>
       <svg
         width="100%"

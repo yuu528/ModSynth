@@ -43,9 +43,9 @@ export const useCableStore = defineStore('cable', () => {
 		const type1 = getJack(p1).dataset.type
 		const type2 = getJack(p2).dataset.type
 
-		if(type1 === 'output' && type2 === 'input') {
+		if(type1 === moduleStore.jackTypes.audioOutput && type2 === moduleStore.jackTypes.audioInput) {
 			// nothing
-		} else if(type1 === 'input' && type2 === 'output') {
+		} else if(type1 === moduleStore.jackTypes.audioInput && type2 === moduleStore.jackTypes.audioOutput) {
 			// swap
 			const tmp = p1
 			p1 = p2
@@ -132,11 +132,11 @@ export const useCableStore = defineStore('cable', () => {
 		let result = undefined
 		if(jack !== undefined && moduleObj !== undefined) {
 			switch(jack.dataset.type) {
-				case 'output':
+				case moduleStore.jackTypes.audioOutput:
 					result = moduleObj.output
 					break
 
-				case 'input':
+				case  moduleStore.jackTypes.audioInput:
 					result = moduleObj.input
 					break
 			}
