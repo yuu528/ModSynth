@@ -45,8 +45,26 @@
             :class="control.id"
             :label="control.name"
             :items="control.items"
+            item-title="name"
+            variant="outlined"
             @update:modelValue="event => { moduleStore.updateValue(props.idx, control.id, event) }"
           >
+            <template v-slot:selection="{ item, index }">
+              <v-list-item v-bind="props">
+                <template v-slot:title>
+                  <img v-if="typeof item.raw === 'object'" :src="item.raw.image" style="height: 2em;">
+                  <span v-if="typeof item.raw === 'string'">{{ item.raw }}</span>
+                </template>
+              </v-list-item>
+            </template>
+            <template v-slot:item="{ props, item }">
+              <v-list-item v-bind="props">
+                <template v-slot:title>
+                  <img v-if="typeof item.raw === 'object'" :src="item.raw.image" style="height: 2em;">
+                  <span v-if="typeof item.raw === 'string'">{{ item.raw }}</span>
+                </template>
+              </v-list-item>
+            </template>
           </v-select>
           <Knob
             v-if="control.component === 'Knob'"

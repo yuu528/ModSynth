@@ -61,7 +61,22 @@ export const useModuleStore = defineStore('module', () => {
 					name: 'Type',
 					component: 'VSelect',
 					items: [
-						'sine', 'square', 'sawtooth', 'triangle'
+						{
+							name: 'sine',
+							image: '/images/waveforms/sine.svg'
+						},
+						{
+							name: 'square',
+							image: '/images/waveforms/square.svg'
+						},
+						{
+							name: 'sawtooth',
+							image: '/images/waveforms/sawtooth.svg'
+						},
+						{
+							name: 'triangle',
+							image: '/images/waveforms/triangle.svg'
+						}
 					],
 					value: 'sine'
 				},
