@@ -11,13 +11,82 @@ Modular synthesizer app for PC
 ## Modules
 - [x] Volume
 - [x] Static Oscillator
-- [ ] VFO
 - [ ] VCO
+- [ ] VCF
+- [ ] LFO
+- [ ] ADSR
+- [ ] VCA
 - [ ] MIDI for VFO, VCO
-- [ ] EQ
+- [ ] Audio Input
+- [ ] Effect
 - [ ] Mixer
 - [ ] Delay
-- [ ] Modulator
-- [ ] Monitor
+- [x] Monitor
 
 and more...
+
+## Installation
+There are no pre-built binary yet.
+
+## Building
+```
+npm i
+npm run build
+```
+
+## Testing
+```
+npm i
+npm run dev
+```
+
+## How to use
+### Read before use
+- Be careful with the volume. The oscillator output could be very loud.
+
+### Main screen overview
+```
+ _______________________
+|           1           |
+|-----------------------|
+|     |             |   |
+|     |             |   |
+|  2  |      3      | 4 |
+|     |             |   |
+|     |             |   |
+|_____|_____________|___|
+```
+
+1. Navigation bar
+2. Module store
+3. Module case
+4. Output section
+
+### Module overview
+```
+ ____________
+|   Title    |
+|            |
+|  Monitors  |
+|            |
+|            |
+|  Controls  |
+|            |
+| Connectors |
+|____________|
+```
+
+### How to...
+#### Setup
+1. Drag modules from the module store and drop into the module case.
+2. Wire modules by dragging connectors.
+3. Connect audio signal(s) into the output connector on the output section to output audio from your speaker.
+
+#### Edit knob
+Rotate the mouse wheel or you can input from the keyboard by clicking number and hit Enter key to apply.
+
+#### Remove a module
+Drag a module from the module case and drop into the module store.
+
+#### Remove a wire
+Click connector.
