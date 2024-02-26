@@ -127,6 +127,15 @@ export const useModuleStore = defineStore('module', () => {
 					max: 16,
 					step: 1,
 					value: 8
+				},
+				{
+					id: 'scopeAmp',
+					name: 'Scope Amp',
+					component: 'Knob',
+					min: 1,
+					max: 16,
+					step: 1,
+					value: 1
 				}
 			],
 			monitors: [
@@ -141,7 +150,7 @@ export const useModuleStore = defineStore('module', () => {
 					name: 'FFT',
 					width: 200,
 					height: 80
-				}
+				},
 			],
 			jacks: [
 				{
@@ -286,11 +295,18 @@ export const useModuleStore = defineStore('module', () => {
 						const ctx = canvas.getContext('2d')
 
 						const scopeSizeControl = module.controls.find(control => control.id === 'scopeSize')
+						const scopeAmpControl = module.controls.find(control => control.id === 'scopeAmp')
 						const maxScopeSize = scopeSizeControl.max
 						let scopeSize = scopeSizeControl.value
 
 						if(module.monitors[0].scopeSize !== undefined) {
 							scopeSize = module.monitors[0].scopeSize
+						}
+
+						let scopeAmp = scopeAmpControl.value
+
+						if(module.monitors[0].scopeAmp !== undefined) {
+							scopeAmp = module.monitors[0].scopeAmp
 						}
 
 						const len = module.input.frequencyBinCount / (maxScopeSize - scopeSize + 1)
@@ -308,7 +324,7 @@ export const useModuleStore = defineStore('module', () => {
 						ctx.beginPath()
 
 						for(let i = 0, x = 0; i < len; i++, x += sliceWidth) {
-							const y = (data[i] / 128.0 * canvas.height) / 2
+							const y = data[i] / 256 * canvas.height * scopeAmp - (canvas.height / 2) * (scopeAmp - 1)
 							if(i === 0) {
 								ctx.moveTo(x, y)
 							} else {
@@ -486,6 +502,10 @@ export const useModuleStore = defineStore('module', () => {
 
 						case 'scopeSize':
 							module.monitors[0].scopeSize = value
+						break
+
+						case 'scopeAmp':
+							module.monitors[0].scopeAmp = value
 						break
 					}
 				break
