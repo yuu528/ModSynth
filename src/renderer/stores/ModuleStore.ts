@@ -28,9 +28,16 @@ export const useModuleStore = defineStore('module', () => {
 		cvOutput: 'cvOutput'
 	})
 
+	const moduleCategories = ref({
+		source: 'Source',
+		visual: 'Visual',
+		filter: 'Filter'
+	})
+
 	const modules = ref({
 		volume: {
 			name: 'Volume',
+			category: moduleCategories.value.filter,
 			controls: [
 				{
 					id: 'volume',
@@ -55,6 +62,7 @@ export const useModuleStore = defineStore('module', () => {
 		},
 		oscillator: {
 			name: 'Osc',
+			category: moduleCategories.value.source,
 			controls: [
 				{
 					id: 'type',
@@ -99,6 +107,7 @@ export const useModuleStore = defineStore('module', () => {
 		},
 		monitor: {
 			name: 'Monitor',
+			category: moduleCategories.value.visual,
 			controls: [
 				{
 					id: 'fftMax',
@@ -435,7 +444,8 @@ export const useModuleStore = defineStore('module', () => {
 	}
 
 	return {
-		mimes, moduleTypes, jackTypes, modules, enabledModules, audioCtx,
+		mimes, moduleTypes, jackTypes, moduleCategories,
+		modules, enabledModules, audioCtx,
 		add, remove, updateValue,
 		baseDragStart, baseDragOver, baseDrop,
 		dragStart, dragOver, dragEnd, drop

@@ -4,24 +4,41 @@
       <v-app-bar-title>ModSynth</v-app-bar-title>
     </v-app-bar>
 
-    <v-main class="d-flex">
+    <v-main class="d-flex h-screen">
       <v-sheet
         border
         @dragover="moduleStore.baseDragOver"
         @drop="moduleStore.baseDrop"
       >
-        <v-sheet v-for="(module, id) in moduleStore.modules" :key="id">
-          <Module
-            draggable="true"
-            :data-id="id"
-            :key="id"
-            :name="module.name"
-            :controls="module.controls"
-            :monitors="module.monitors"
-            :jacks="module.jacks"
-            @dragstart="moduleStore.baseDragStart"
-            @dragend="moduleStore.dragEnd"
-          />
+        <v-tabs v-model="moduleTab" align-tabs="center">
+          <v-tab v-for="(modules, category) in modulesByCategory" :key="category" :value="category">
+            {{ category }}
+          </v-tab>
+        </v-tabs>
+
+        <v-sheet>
+          <v-window v-model="moduleTab">
+            <v-window-item
+              v-for="(modules, category) in modulesByCategory"
+              :key="category"
+              :value="category"
+            >
+              <v-sheet v-for="(module, id) in modules" :key="id">
+                <Module
+                  draggable="true"
+                  :data-id="id"
+                  :key="id"
+                  :name="module.name"
+                  :controls="module.controls"
+                  :monitors="module.monitors"
+                  :jacks="module.jacks"
+                  @dragstart="moduleStore.baseDragStart"
+                  @dragend="moduleStore.dragEnd"
+                  style="transform: scale(0.8);"
+                />
+              </v-sheet>
+            </v-window-item>
+          </v-window>
         </v-sheet>
       </v-sheet>
       <v-sheet
@@ -60,10 +77,10 @@
         height="100%"
         id="cable-svg"
         style="
-          position: absolute;
-          top: 0;
-          left: 0;
-          pointer-events: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        pointer-events: none;
         "
       >
         <path
@@ -78,7 +95,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed } from 'vue'
+import { reactive, computed, ref } from 'vue'
 
 import { useCableStore } from './stores/CableStore'
 import { useModuleStore } from './stores/ModuleStore'
@@ -90,6 +107,20 @@ const cableStore = useCableStore()
 const moduleStore = useModuleStore()
 
 const cables = computed(() => cableStore.cablesData)
+
+const moduleTab = ref(null)
+
+let modulesByCategory = {}
+for(const key of Object.keys(moduleStore.modules)) {
+  const module = moduleStore.modules[key]
+  if(!(module.category in modulesByCategory)) {
+    modulesByCategory[module.category] = {}
+  }
+
+  modulesByCategory[module.category][key] = module
+}
+
+console.log(modulesByCategory)
 
 const enabledModules = computed(() => moduleStore.enabledModules)
 </script>
