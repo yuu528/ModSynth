@@ -149,6 +149,74 @@ export const useModuleStore = defineStore('module', () => {
 					type: jackTypes.value.audioInput
 				}
 			]
+		},
+		audioInput: {
+			name: 'Audio Player',
+			category: moduleCategories.value.source,
+			controls: [
+				{
+					id: 'file',
+					name: 'File',
+					component: 'VFileInput'
+				},
+				{
+					id: 'audio',
+					name: 'Audio',
+					component: 'audio'
+				},
+				{
+					id: 'seek',
+					name: '',
+					component: 'VSlider',
+					min: 0,
+					max: 0,
+					step: 1,
+					value: 0
+				},
+				{
+					id: 'play',
+					name: 'Play',
+					component: 'Knob',
+					min: 0,
+					max: 1,
+					step: 1,
+					value: 0,
+					disabled: true
+				},
+				{
+					id: 'volume',
+					name: 'Volume',
+					component: 'Knob',
+					min: 0,
+					max: 1,
+					step: 0.1,
+					value: 0.5
+				},
+				{
+					id: 'speed',
+					name: 'Speed',
+					component: 'Knob',
+					min: 0.3,
+					max: 4,
+					step: 0.1,
+					value: 1
+				},
+				{
+					id: 'pitchCor',
+					name: 'Pitch Cor',
+					component: 'Knob',
+					min: 0,
+					max: 1,
+					step: 1,
+					value: 1
+				}
+			],
+			jacks: [
+				{
+					name: 'Output',
+					type: jackTypes.value.audioOutput
+				}
+			]
 		}
 	})
 
@@ -304,6 +372,31 @@ export const useModuleStore = defineStore('module', () => {
 				module.monitors[0].draw()
 				module.monitors[1].draw()
 			break
+
+			case 'audioInput':
+				nextTick(() => {
+					const audioCtrlIdx = module.controls.findIndex(control => control.id === 'audio')
+					module.controls[audioCtrlIdx].elmId = `m${idx}.${module.controls[audioCtrlIdx].id}`
+
+					const audioElm = document.getElementById(module.controls[audioCtrlIdx].elmId)
+
+					module.output = audioCtx.value.createMediaElementSource(audioElm)
+
+					const eventNames = [
+						'canplay',
+						'loadedmetadata',
+						'pause',
+						'play',
+						'timeupdate'
+					]
+
+					eventNames.forEach(eventName => {
+						audioElm.addEventListener(eventName, (event) => {
+							updateValue(audioElm.dataset.moduleidx, audioElm.dataset.id, event)
+						})
+					})
+				})
+				break
 		}
 	}
 
@@ -316,7 +409,7 @@ export const useModuleStore = defineStore('module', () => {
 		})
 	}
 
-	function updateValue(idx, id, value) {
+	async function updateValue(idx, id, value) {
 		const module = enabledModules.value[idx]
 
 		if(module !== undefined) {
@@ -349,6 +442,68 @@ export const useModuleStore = defineStore('module', () => {
 
 						case 'scopeSize':
 							module.monitors[0].scopeSize = value
+							break
+					}
+					break
+
+				case 'audioInput':
+					const audioElm = module.output.mediaElement
+
+					switch(id) {
+						case 'audio':
+							const seekCtrlIdx = module.controls.findIndex(control => control.id === 'seek')
+							const playCtrlIdx = module.controls.findIndex(control => control.id === 'play')
+
+							switch(value.type) {
+								case 'canplay':
+									module.controls[playCtrlIdx].disabled = false
+									break
+
+								case 'loadedmetadata':
+									module.controls[seekCtrlIdx].max = value.target.duration
+									break
+
+								case 'pause':
+									module.controls[playCtrlIdx].value = 0
+									break
+
+								case 'play':
+									module.controls[playCtrlIdx].value = 1
+									break
+
+								case 'timeupdate':
+									module.controls[seekCtrlIdx].value = value.target.currentTime
+									break
+							}
+							break
+
+						case 'file':
+							audioElm.src = URL.createObjectURL(value)
+							audioElm.load()
+							break
+
+						case 'seek':
+							audioElm.currentTime = value
+							break
+
+						case 'play':
+							if(value) {
+								audioElm.play()
+							} else {
+								audioElm.pause()
+							}
+							break
+
+						case 'volume':
+							audioElm.volume = value
+							break
+
+						case 'speed':
+							audioElm.playbackRate = value
+							break
+
+						case 'pitchCor':
+							audioElm.preservesPitch = value
 							break
 					}
 					break
@@ -435,7 +590,7 @@ export const useModuleStore = defineStore('module', () => {
 						y: event.clientY - offsetY
 					}
 
-				nextTick(() => {
+					nextTick(() => {
 						cableStore.updateCables()
 					})
 				break

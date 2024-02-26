@@ -1,19 +1,21 @@
 <template>
-	<v-sheet>
-		<div class="knob" @wheel="wheel" :style="{transform: `rotate(${calcDeg()}deg)`}">
-			<div class="mark">
+	<v-sheet class="d-flex justify-center flex-wrap">
+		<div>
+			<div class="knob" @wheel="wheel" :style="{transform: `rotate(${calcDeg()}deg)`, backgroundColor: props.disabled ? 'gray' : 'black' }">
+				<div class="mark">
+				</div>
+				<div
+					class="value"
+					:style="{transform: `rotate(${-calcDeg()}deg)`}"
+					:contenteditable="!props.disabled"
+					@keypress="keypress"
+				>
+					{{ value }}
+				</div>
 			</div>
-			<div
-				class="value"
-				:style="{transform: `rotate(${-calcDeg()}deg)`}"
-				contenteditable="true"
-				@keypress="keypress"
-			>
-				{{ value }}
+			<div class="text-center text-caption label">
+				{{ props.label }}
 			</div>
-		</div>
-		<div class="text-center text-caption label">
-			{{ props.label }}
 		</div>
 	</v-sheet>
 </template>
@@ -25,13 +27,18 @@ import { NumberUtil } from '../scripts/util/NumberUtil'
 
 const model = defineModel()
 const props = defineProps([
-	'min', 'max', 'step', 'change', 'label', 'si'
+	'min', 'max', 'step', 'change', 'label', 'si', 'disabled'
 ])
 
 const value = computed(() => {
 	if(props.si) {
 		return NumberUtil.toSI(model.value)
 	}
+
+	if(props.min === 0 && props.max === 1 && props.step === 1) {
+		return model.value ? 'On' : 'Off'
+	}
+
 	return model.value
 })
 
@@ -66,27 +73,34 @@ function calcDeg() {
 
 function wheel(event) {
 	event.preventDefault()
-	if (0 < event.deltaY) {
-		stepDown()
-	} else if(event.deltaY < 0) {
-		stepUp()
+	if(!props.disabled) {
+		if (0 < event.deltaY) {
+			stepDown()
+		} else if(event.deltaY < 0) {
+			stepUp()
+		}
 	}
 }
 
 function keypress(event) {
-	if(isNaN(event.key) && event.key !== 'Enter' && event.key !== '.') {
+	if(props.disabled) {
 		event.preventDefault()
-	} else if(event.key === 'Enter') {
-		const value = Number(event.target.innerText)
+		return
+	} else {
+		if(isNaN(event.key) && event.key !== 'Enter' && event.key !== '.') {
+			event.preventDefault()
+		} else if(event.key === 'Enter') {
+			const value = Number(event.target.innerText)
 
-		if(isNaN(event.target.innerText)) {
-			event.target.innerText = model.value
-		} else if(props.min <= value && value <= props.max) {
-			setModelValue(value)
-		} else {
-			event.target.innerText = model.value
+			if(isNaN(event.target.innerText)) {
+				event.target.innerText = model.value
+			} else if(props.min <= value && value <= props.max) {
+				setModelValue(value)
+			} else {
+				event.target.innerText = model.value
+			}
+			event.target.blur()
 		}
-		event.target.blur()
 	}
 }
 </script>

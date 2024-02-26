@@ -1,5 +1,5 @@
 <template>
-  <v-sheet class="rounded" border="md">
+  <v-sheet class="rounded" border="md" style="max-width: 280px;">
     <v-container>
       <v-row>
         <v-col class="text-center">
@@ -19,7 +19,7 @@
           </v-sheet>
         </v-col>
       </v-row>
-      <v-row>
+      <v-row no-gutters justify="center">
         <v-col
           v-for="control in props.controls"
           :key="control.name"
@@ -75,11 +75,48 @@
             :max="control.max"
             :step="control.step"
             :si="control.si"
+            :disabled="control.disabled"
             :change="value => { moduleStore.updateValue(props.idx, control.id, value) }"
           />
+          <v-file-input
+            v-if="control.component === 'VFileInput'"
+            accept="audio/*"
+            variant="outlined"
+            :class="control.id"
+            :label="control.name"
+            @update:modelValue="file => { moduleStore.updateValue(props.idx, control.id, file[0]) }"
+          >
+          </v-file-input>
+          <audio
+            v-if="control.component === 'audio'"
+            :class="control.id"
+            :id="`m${props.idx}.${control.id}`"
+            :data-moduleidx="props.idx"
+            :data-id="control.id"
+          ></audio>
+          <v-btn
+            v-if="control.component === 'VBtn'"
+            variant="outlined"
+            :class="control.id"
+            :active="control.active"
+            :disabled="control.disabled"
+            @click="event => { moduleStore.updateValue(props.idx, control.id, null) }"
+          >
+            {{ control.name }}
+          </v-btn>
+          <v-slider
+            v-if="control.component === 'VSlider'"
+            v-model="control.value"
+            :class="control.id"
+            :label="control.name"
+            :min="control.min"
+            :max="control.max"
+            :step="control.step"
+            @update:modelValue="value => { moduleStore.updateValue(props.idx, control.id, value) }"
+          ></v-slider>
         </v-col>
       </v-row>
-      <v-row>
+      <v-row no-gutters>
         <v-col v-for="jack in props.jacks" :key="jack.name">
           <Jack :name="jack.name" :dataKey="`m${props.idx}.${jack.name}`" :dataType="jack.type" :dataModuleIdx="props.idx" />
         </v-col>
@@ -105,18 +142,15 @@ const props = defineProps([
 ])
 
 function getCols(component: string) {
-  switch(component) {
-    case 'VTextField':
-      return 12
+  const cols = {
+    Knob: 3,
+    VBtn: 4
+  }
 
-    case 'VSelect':
-      return 12
-
-    case 'Knob':
-      return 3
-
-    default:
-      return 12
+  if(component in cols) {
+    return cols[component]
+  } else {
+    return 12
   }
 }
 </script>

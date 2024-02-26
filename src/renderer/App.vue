@@ -120,7 +120,5 @@ for(const key of Object.keys(moduleStore.modules)) {
   modulesByCategory[module.category][key] = module
 }
 
-console.log(modulesByCategory)
-
 const enabledModules = computed(() => moduleStore.enabledModules)
 </script>
