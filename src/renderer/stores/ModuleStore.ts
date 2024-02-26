@@ -41,7 +41,7 @@ export const useModuleStore = defineStore('module', () => {
 			controls: [
 				{
 					id: 'volume',
-					name: 'Volume',
+					name: 'Vol',
 					component: 'Knob',
 					min: 0,
 					max: 2,
@@ -51,11 +51,11 @@ export const useModuleStore = defineStore('module', () => {
 			],
 			jacks: [
 				{
-					name: 'Input',
+					name: 'In',
 					type: jackTypes.value.audioInput
 				},
 				{
-					name: 'Output',
+					name: 'Out',
 					type: jackTypes.value.audioOutput
 				}
 			]
@@ -100,7 +100,7 @@ export const useModuleStore = defineStore('module', () => {
 			],
 			jacks: [
 				{
-					name: 'Output',
+					name: 'Out',
 					type: jackTypes.value.audioOutput
 				}
 			]
@@ -145,7 +145,7 @@ export const useModuleStore = defineStore('module', () => {
 			],
 			jacks: [
 				{
-					name: 'Input',
+					name: 'In',
 					type: jackTypes.value.audioInput
 				}
 			]
@@ -185,7 +185,7 @@ export const useModuleStore = defineStore('module', () => {
 				},
 				{
 					id: 'volume',
-					name: 'Volume',
+					name: 'Vol',
 					component: 'Knob',
 					min: 0,
 					max: 1,
@@ -203,7 +203,7 @@ export const useModuleStore = defineStore('module', () => {
 				},
 				{
 					id: 'pitchCor',
-					name: 'Pitch Cor',
+					name: 'Pitch Corr',
 					component: 'Knob',
 					min: 0,
 					max: 1,
@@ -213,7 +213,7 @@ export const useModuleStore = defineStore('module', () => {
 			],
 			jacks: [
 				{
-					name: 'Output',
+					name: 'Out',
 					type: jackTypes.value.audioOutput
 				}
 			]

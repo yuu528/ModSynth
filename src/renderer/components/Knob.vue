@@ -14,7 +14,7 @@
 				</div>
 			</div>
 			<div class="text-center text-caption label">
-				{{ props.label }}
+				<span>{{ props.label.replace(' ', '\n') }}</span>
 			</div>
 		</div>
 	</v-sheet>
@@ -131,6 +131,11 @@ function keypress(event) {
 
 .label {
 	width: 30px;
-	overflow-wrap: anywhere;
+	overflow: visible;
+}
+
+.label span {
+	display: flex;
+	justify-content: center;
 }
 </style>
