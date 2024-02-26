@@ -287,6 +287,8 @@ export const useModuleStore = defineStore('module', () => {
 			case 'monitor':
 				module.input = audioCtx.value.createAnalyser()
 				module.input.fftSize = 2048
+
+				const waveColor = 'limegreen'
 				module.monitors[0].draw = () => {
 					requestAnimationFrame(module.monitors[0].draw)
 					const canvas = document.getElementById(`m${idx}.monitor.${module.monitors[0].id}`)
@@ -315,11 +317,11 @@ export const useModuleStore = defineStore('module', () => {
 						const data = new Uint8Array(len)
 						module.input.getByteTimeDomainData(data)
 
-						ctx.fillStyle = 'rgb(0, 0, 0)'
+						ctx.fillStyle = 'black'
 						ctx.fillRect(0, 0, canvas.width, canvas.height)
 
 						ctx.lineWidth = 2
-						ctx.strokeStyle = 'rgb(255, 255, 255)'
+						ctx.strokeStyle = waveColor
 
 						ctx.beginPath()
 
@@ -370,13 +372,13 @@ export const useModuleStore = defineStore('module', () => {
 							rulers.push(i)
 						}
 
-						ctx.fillStyle = 'rgb(0, 0, 0)'
+						ctx.fillStyle = 'black'
 						ctx.fillRect(0, 0, canvas.width, canvas.height)
 
 						ctx.lineWidth = sliceWidth + 1
-						ctx.strokeStyle = 'rgb(255, 255, 255)'
+						ctx.strokeStyle = waveColor
 
-						ctx.fillStyle = 'rgb(255, 255, 255)'
+						ctx.fillStyle = 'white'
 						ctx.font = '8px sans-serif'
 
 						ctx.beginPath()
@@ -390,7 +392,8 @@ export const useModuleStore = defineStore('module', () => {
 						ctx.stroke()
 
 						ctx.beginPath()
-						ctx.lineWidth = 2
+						ctx.lineWidth = 1
+						ctx.strokeStyle = 'gray'
 
 						for(let i = 0, x = 0, r = 0; i * freqStep <= maxFreq; i++, x += sliceWidth) {
 							if(i * freqStep > rulers[r]) {
@@ -404,7 +407,7 @@ export const useModuleStore = defineStore('module', () => {
 								const meas = ctx.measureText(text)
 								const textPosX = Math.min(Math.max(0, x - meas.width / 2), canvas.width - meas.width)
 								const textPosY = canvas.height - (meas.actualBoundingBoxAscent + meas.actualBoundingBoxDescent)
-								const linePos = canvas.height - 5
+								const linePos = 0
 
 								ctx.fillText(text, textPosX, textPosY)
 								ctx.moveTo(x, canvas.height)
