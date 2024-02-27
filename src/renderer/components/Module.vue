@@ -26,7 +26,7 @@
           :cols="getCols(control.component)"
         >
           <v-text-field
-            v-if="control.component === 'VTextField'"
+            v-if="control.component === Component.TextField"
             type="number"
             density="compact"
             v-model="control.value"
@@ -39,13 +39,13 @@
           >
           </v-text-field>
           <v-select
-            v-if="control.component === 'VSelect'"
+            v-if="control.component === Component.Select"
             density="compact"
             v-model="control.value"
             :class="control.id"
             :label="control.name"
             :items="control.items"
-            item-title="name"
+            item-title="value"
             item-value="value"
             variant="outlined"
             @update:modelValue="event => { moduleStore.updateValue(props.idx, control.id, event) }"
@@ -55,7 +55,7 @@
                 <template v-slot:title>
                   <template v-if="typeof item.raw === 'object'">
                     <img v-if="'image' in item.raw" :src="item.raw.image" style="height: 2em;">
-                    <span v-else-if="'name' in item.raw">{{ item.raw.name }}</span>
+                    <span v-else-if="'label' in item.raw">{{ item.raw.label }}</span>
                   </template>
                   <span v-if="typeof item.raw === 'string'">{{ item.raw }}</span>
                 </template>
@@ -66,7 +66,7 @@
                 <template v-slot:title>
                   <template v-if="typeof item.raw === 'object'">
                     <img v-if="'image' in item.raw" :src="item.raw.image" style="height: 2em;">
-                    <span v-if="'name' in item.raw">{{ item.raw.name }}</span>
+                    <span v-if="'label' in item.raw">{{ item.raw.label }}</span>
                   </template>
                   <span v-if="typeof item.raw === 'string'">{{ item.raw }}</span>
                 </template>
@@ -74,7 +74,7 @@
             </template>
           </v-select>
           <Knob
-            v-if="control.component === 'Knob'"
+            v-if="control.component === Component.Knob"
             v-model="control.value"
             :class="control.id"
             :label="control.name"
@@ -86,7 +86,7 @@
             :change="value => { moduleStore.updateValue(props.idx, control.id, value) }"
           />
           <v-file-input
-            v-if="control.component === 'VFileInput'"
+            v-if="control.component === Component.FileInput"
             accept="audio/*"
             variant="outlined"
             :class="control.id"
@@ -95,14 +95,14 @@
           >
           </v-file-input>
           <audio
-            v-if="control.component === 'audio'"
+            v-if="control.component === Component.Audio"
             :class="control.id"
             :id="`m${props.idx}.${control.id}`"
             :data-moduleidx="props.idx"
             :data-id="control.id"
           ></audio>
           <v-btn
-            v-if="control.component === 'VBtn'"
+            v-if="control.component === Component.Btn"
             variant="outlined"
             :class="control.id"
             :active="control.active"
@@ -112,7 +112,7 @@
             {{ control.name }}
           </v-btn>
           <v-slider
-            v-if="control.component === 'VSlider'"
+            v-if="control.component === Component.Slider"
             v-model="control.value"
             :class="control.id"
             :label="control.name"
@@ -135,6 +135,8 @@
 <script setup lang="ts">
 import { useModuleStore } from '../stores/ModuleStore'
 
+import Component from '../scripts/enum/Component'
+
 import Knob from './Knob.vue'
 import Jack from './Jack.vue'
 
@@ -148,16 +150,13 @@ const props = defineProps([
   'idx'
 ])
 
-function getCols(component: string) {
-  const cols = {
-    Knob: 3,
-    VBtn: 4
-  }
+function getCols(component: Component) {
+  switch(component) {
+    case Component.Knob:
+      return 3
 
-  if(component in cols) {
-    return cols[component]
-  } else {
-    return 12
+    default:
+      return 12
   }
 }
 </script>

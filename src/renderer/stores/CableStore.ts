@@ -3,6 +3,8 @@ import { defineStore } from 'pinia'
 
 import { useModuleStore } from './ModuleStore'
 
+import JackType from '../scripts/enum/JackType'
+
 export class Cable {
 	private _j1: string
 	private _j2: string
@@ -40,12 +42,12 @@ export const useCableStore = defineStore('cable', () => {
 	})
 
 	function add(p1: string, p2: string) {
-		const type1 = getJack(p1).dataset.type
-		const type2 = getJack(p2).dataset.type
+		const type1 = parseInt(getJack(p1).dataset.type)
+		const type2 = parseInt(getJack(p2).dataset.type)
 
-		if(type1 === moduleStore.jackTypes.audioOutput && type2 === moduleStore.jackTypes.audioInput) {
+		if(type1 === JackType.AUDIO_OUTPUT && type2 === JackType.AUDIO_INPUT) {
 			// nothing
-		} else if(type1 === moduleStore.jackTypes.audioInput && type2 === moduleStore.jackTypes.audioOutput) {
+		} else if(type1 === JackType.AUDIO_INPUT && type2 === JackType.AUDIO_OUTPUT) {
 			// swap
 			const tmp = p1
 			p1 = p2
@@ -81,9 +83,6 @@ export const useCableStore = defineStore('cable', () => {
 		)
 
 		for(const cable of removed) {
-			const jack1 = getJack(cable.j1)
-			const jack2 = getJack(cable.j2)
-
 			const src = getAudioNode(cable.j1)
 			const dest = getAudioNode(cable.j2)
 
@@ -115,11 +114,11 @@ export const useCableStore = defineStore('cable', () => {
 		}
 	}
 
-	function getParentModule(id: string) {
+	function getParentModuleDOM(id: string) {
 		return getJack(id).closest('.enabledModule')
 	}
 
-	function getParentModuleObj(id: string) {
+	function getParentModule(id: string) {
 		return moduleStore.enabledModules[getJack(id).dataset.moduleidx]
 	}
 
@@ -129,17 +128,17 @@ export const useCableStore = defineStore('cable', () => {
 		}
 
 		const jack = getJack(id)
-		const moduleObj = getParentModuleObj(id)
+		const module = getParentModule(id)
 
 		let result = undefined
-		if(jack !== undefined && moduleObj !== undefined) {
-			switch(jack.dataset.type) {
-				case moduleStore.jackTypes.audioOutput:
-					result = moduleObj.output
+		if(jack !== undefined && module !== undefined) {
+			switch(parseInt(jack.dataset.type)) {
+				case JackType.AUDIO_OUTPUT:
+					result = module.data.output
 					break
 
-				case  moduleStore.jackTypes.audioInput:
-					result = moduleObj.input
+				case JackType.AUDIO_INPUT:
+					result = module.data.input
 					break
 			}
 

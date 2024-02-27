@@ -28,10 +28,10 @@
                   draggable="true"
                   :data-id="id"
                   :key="id"
-                  :name="module.name"
-                  :controls="module.controls"
-                  :monitors="module.monitors"
-                  :jacks="module.jacks"
+                  :name="module.data.name"
+                  :controls="module.data.controls"
+                  :monitors="module.data.monitors"
+                  :jacks="module.data.jacks"
                   @dragstart="moduleStore.baseDragStart"
                   @dragend="moduleStore.dragEnd"
                   style="transform: scale(0.8);"
@@ -52,17 +52,17 @@
             draggable="true"
             class="enabledModule"
             :key="idx"
-            :data-id="module.id"
+            :data-id="module.data.id"
             :data-idx="idx"
             :idx="idx"
-            :name="module.name"
-            :controls="module.controls"
-            :monitors="module.monitors"
-            :jacks="module.jacks"
+            :name="module.data.name"
+            :controls="module.data.controls"
+            :monitors="module.data.monitors"
+            :jacks="module.data.jacks"
             :style="{
               position: 'absolute',
-              left: module.pos.x + 'px',
-              top: module.pos.y + 'px'
+              left: module.data.pos.x + 'px',
+              top: module.data.pos.y + 'px'
             }"
             @dragstart="moduleStore.dragStart"
             @dragend="moduleStore.dragEnd"
@@ -70,7 +70,7 @@
         </template>
       </v-sheet>
       <v-sheet class="flex-shrink-1">
-        <Jack name="Speaker" dataKey="master.output" :dataType="moduleStore.jackTypes.audioInput" />
+        <Jack name="Speaker" dataKey="master.output" :dataType="JackType.AUDIO_INPUT" />
       </v-sheet>
       <svg
         width="100%"
@@ -100,6 +100,8 @@ import { reactive, computed, ref } from 'vue'
 import { useCableStore } from './stores/CableStore'
 import { useModuleStore } from './stores/ModuleStore'
 
+import JackType from './scripts/enum/JackType'
+
 import Jack from './components/Jack.vue'
 import Module from './components/Module.vue'
 
@@ -111,13 +113,13 @@ const cables = computed(() => cableStore.cablesData)
 const moduleTab = ref(null)
 
 let modulesByCategory = {}
-for(const key of Object.keys(moduleStore.modules)) {
-  const module = moduleStore.modules[key]
-  if(!(module.category in modulesByCategory)) {
-    modulesByCategory[module.category] = {}
+
+for(const module of moduleStore.modules) {
+  if(!(module.data.category in modulesByCategory)) {
+    modulesByCategory[module.data.category] = {}
   }
 
-  modulesByCategory[module.category][key] = module
+  modulesByCategory[module.data.category][module.data.id] = module
 }
 
 const enabledModules = computed(() => moduleStore.enabledModules)
