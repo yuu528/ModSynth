@@ -38,41 +38,14 @@
             @change="event => { moduleStore.updateValue(props.idx, control.id, event.target.value) }"
           >
           </v-text-field>
-          <v-select
+          <Select
             v-if="control.component === Component.Select"
-            density="compact"
             v-model="control.value"
             :class="control.id"
             :label="control.name"
             :items="control.items"
-            item-title="value"
-            item-value="value"
-            variant="outlined"
-            @update:modelValue="event => { moduleStore.updateValue(props.idx, control.id, event) }"
-          >
-            <template v-slot:selection="{ item, index }">
-              <v-list-item v-bind="props">
-                <template v-slot:title>
-                  <template v-if="typeof item.raw === 'object'">
-                    <img v-if="'image' in item.raw" :src="item.raw.image" style="height: 2em;">
-                    <span v-else-if="'label' in item.raw">{{ item.raw.label }}</span>
-                  </template>
-                  <span v-if="typeof item.raw === 'string'">{{ item.raw }}</span>
-                </template>
-              </v-list-item>
-            </template>
-            <template v-slot:item="{ props, item }">
-              <v-list-item v-bind="props">
-                <template v-slot:title>
-                  <template v-if="typeof item.raw === 'object'">
-                    <img v-if="'image' in item.raw" :src="item.raw.image" style="height: 2em;">
-                    <span v-if="'label' in item.raw">{{ item.raw.label }}</span>
-                  </template>
-                  <span v-if="typeof item.raw === 'string'">{{ item.raw }}</span>
-                </template>
-              </v-list-item>
-            </template>
-          </v-select>
+            :update="event => { moduleStore.updateValue(props.idx, control.id, event) }"
+          />
           <Knob
             v-if="control.component === Component.Knob"
             v-model="control.value"
@@ -139,6 +112,7 @@ import Component from '../scripts/enum/Component'
 
 import Knob from './Knob.vue'
 import Jack from './Jack.vue'
+import Select from './Select.vue'
 
 const moduleStore = useModuleStore()
 
