@@ -80,7 +80,7 @@
             :class="control.id"
             :active="control.active"
             :disabled="control.disabled"
-            @click="() => { moduleStore.updateValue(props.idx, control.id, null) }"
+            @click="() => { moduleStore.updateValue(props.idx, control.id, 0) }"
           >
             {{ control.name }}
           </v-btn>
