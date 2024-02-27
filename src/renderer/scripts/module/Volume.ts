@@ -45,13 +45,23 @@ export default class Volume extends Module {
 	onEnable(idx: number) {
 		this._onEnable(idx)
 
-		const vol = this.getControl('volume').value
+		const volCtrl = this.getControl('volume')
+
+		if(volCtrl === undefined) return
+
+		const vol = volCtrl.value
+
 		this.data.input = this.moduleStore.audioCtx.createGain()
-		this.data.input.gain.setValueAtTime(vol, this.moduleStore.audioCtx.currentTime)
+
+		if(!(this.data.input instanceof GainNode)) return
+
+		this.data.input.gain.setValueAtTime(vol as number, this.moduleStore.audioCtx.currentTime)
 		this.data.output = this.data.input
 	}
 
 	updateValue(idx: number, id: string, value: number) {
+		if(!(this.data.input instanceof GainNode)) return
+
 		switch(id) {
 			case 'volume':
 				this.data.input.gain.setValueAtTime(value, this.moduleStore.audioCtx.currentTime)

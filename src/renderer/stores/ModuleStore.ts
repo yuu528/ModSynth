@@ -1,11 +1,13 @@
-import { ref, toRaw, nextTick } from 'vue'
+import { ref, nextTick } from 'vue'
+import type { Ref } from 'vue'
+
 import { defineStore } from 'pinia'
 
 import { useCableStore } from './CableStore'
 
-import { NumberUtil } from '../scripts/util/NumberUtil'
-
 import ModuleType from '../scripts/enum/ModuleType'
+
+import Module from '../scripts/module/Module'
 
 import AudioPlayer from '../scripts/module/AudioPlayer'
 import InputDevice from '../scripts/module/InputDevice'
@@ -24,19 +26,24 @@ export const useModuleStore = defineStore('module', () => {
 		moduleDragOffsetY: 'application/msmodule.doy'
 	})
 
-	const modules = ref([
+	const modules: Ref<Module[]> = ref([])
+
+	const enabledModules = ref<Module[]>([])
+
+	const audioCtx = ref(new window.AudioContext());
+
+	// Push modules by forEach to avoid type annotation problem
+	[
 		new AudioPlayer(),
 		new InputDevice(),
 		new Monitor(),
 		new Oscillator(),
 		new Volume()
-	])
+	].forEach(module => {
+		modules.value.push(module)
+	})
 
-	const enabledModules = ref([])
-
-	const audioCtx = ref(new window.AudioContext())
-
-	async function add(module) {
+	async function add(module: Module) {
 		const idx = enabledModules.value.push(module) - 1
 
 		nextTick(() => {
@@ -44,16 +51,22 @@ export const useModuleStore = defineStore('module', () => {
 		})
 	}
 
-	function remove(idx) {
-		enabledModules.value[idx].input?.disconnect()
-		enabledModules.value[idx].output?.disconnect()
+	function remove(idx: number) {
+		const module = enabledModules.value[idx]
+
+		if(module.data === undefined) return
+
+		module.data.input?.disconnect()
+		module.data.output?.disconnect()
+
 		delete enabledModules.value[idx]
+
 		nextTick(() => {
 			cableStore.updateCables()
 		})
 	}
 
-	async function updateValue(idx, id, value) {
+	async function updateValue(idx: number, id: string, value: number | string | Event | File) {
 		const module = enabledModules.value[idx]
 
 		if(module !== undefined) {
@@ -62,95 +75,134 @@ export const useModuleStore = defineStore('module', () => {
 	}
 
 	function getModuleBase(id: string) {
-		return modules.value.find(module => module.data.id === id)
+		const module = modules.value.find(module => module.data !== undefined && module.data.id === id)
+		if(module === undefined) {
+			throw new Error(`Module ${id} not found`)
+		}
+
+		return module
 	}
 
 	function getModuleBaseIdx(id: string) {
-		return modules.value.findIndex(module => module.data.id === id)
+		return modules.value.findIndex(module => module.data !== undefined && module.data.id === id)
 	}
 
-	function baseDragStart(event) {
-		event.dataTransfer.setData(mimes.value.moduleId, event.target.dataset.id)
+	function baseDragStart(event: DragEvent) {
+		if(event.target === null) return
+		if(event.dataTransfer === null) return
+
+		const target = event.target as HTMLElement
+
+		if(target.dataset.id === undefined) return
+
+		event.dataTransfer.setData(mimes.value.moduleId, target.dataset.id)
 		event.dataTransfer.setData(mimes.value.moduleType, ModuleType.BASE)
 		event.dataTransfer.setData(
 			mimes.value.moduleDragOffsetX,
-			event.clientX - event.target.getBoundingClientRect().left - window.scrollX
+			(event.clientX - target.getBoundingClientRect().left - window.scrollX).toString()
 		)
 		event.dataTransfer.setData(
 			mimes.value.moduleDragOffsetY,
-			event.clientY - event.target.getBoundingClientRect().top - window.scrollY
+			(event.clientY - target.getBoundingClientRect().top - window.scrollY).toString()
 		)
 	}
 
-	function baseDragOver(event) {
+	function baseDragOver(event: DragEvent) {
+		if(event.dataTransfer === null) return
+
 		if(event.dataTransfer.types.includes(mimes.value.moduleType)) {
 			event.preventDefault()
 		}
 	}
 
-	function baseDrop(event) {
+	function baseDrop(event: DragEvent) {
+		if(event.dataTransfer === null) return
+
 		if(event.dataTransfer.types.includes(mimes.value.moduleType)) {
 			if(event.dataTransfer.getData(mimes.value.moduleType) == ModuleType.ENABLED) {
-				const idx = event.dataTransfer.getData(mimes.value.moduleIdx)
+				const idx = parseInt(event.dataTransfer.getData(mimes.value.moduleIdx))
 				remove(idx)
 			}
 		}
 	}
 
-	function dragStart(event) {
+	function dragStart(event: DragEvent) {
+		if(event.target === null) return
+		if(event.dataTransfer === null) return
+
+		const target = event.target as HTMLElement
+
+		if(target.dataset.idx === undefined) return
+
 		event.dataTransfer.setData(mimes.value.moduleType, ModuleType.ENABLED)
-		event.dataTransfer.setData(mimes.value.moduleIdx, event.target.dataset.idx)
+		event.dataTransfer.setData(mimes.value.moduleIdx, target.dataset.idx)
 		event.dataTransfer.setData(
 			mimes.value.moduleDragOffsetX,
-			event.clientX - event.target.getBoundingClientRect().left - window.scrollX
+			(event.clientX - target.getBoundingClientRect().left - window.scrollX).toString()
 		)
 		event.dataTransfer.setData(
 			mimes.value.moduleDragOffsetY,
-			event.clientY - event.target.getBoundingClientRect().top - window.scrollY
+			(event.clientY - target.getBoundingClientRect().top - window.scrollY).toString()
 		)
 	}
 
-	function dragOver(event) {
+	function dragOver(event: DragEvent) {
+		if(event.dataTransfer === null) return
+
 		if(event.dataTransfer.types.includes(mimes.value.moduleType)) {
 			event.preventDefault()
 		}
 	}
 
-	function dragEnd(event) {
+	function dragEnd(event: DragEvent) {
+		if(event.dataTransfer === null) return
+
 		event.dataTransfer.clearData()
 	}
 
-	function drop(event) {
+	function drop(event: DragEvent) {
+		if(event.dataTransfer === null) return
+
 		if(event.dataTransfer.types.includes(mimes.value.moduleType) && !event.dataTransfer.types.includes(cableStore.mimes.cableId1)) {
-			const offsetX = event.dataTransfer.getData(mimes.value.moduleDragOffsetX)
-			const offsetY = event.dataTransfer.getData(mimes.value.moduleDragOffsetY)
+			const offsetX = parseInt(event.dataTransfer.getData(mimes.value.moduleDragOffsetX))
+			const offsetY = parseInt(event.dataTransfer.getData(mimes.value.moduleDragOffsetY))
 
-			switch(parseInt(event.dataTransfer.getData(mimes.value.moduleType))) {
+			switch(event.dataTransfer.getData(mimes.value.moduleType)) {
 				case ModuleType.BASE:
-					const id = event.dataTransfer.getData(mimes.value.moduleId)
+					{
+						const id = event.dataTransfer.getData(mimes.value.moduleId)
 
-					let module = getModuleBase(id).clone()
+						const module = getModuleBase(id).clone()
 
-					module.data.id = id
-					module.data.pos = {
-						x: event.clientX - offsetX,
-						y: event.clientY - offsetY
+						if(module.data === undefined) return
+
+						module.data.id = id
+						module.data.pos = {
+							x: event.clientX - offsetX,
+							y: event.clientY - offsetY
+						}
+
+						add(module)
 					}
-
-					add(module)
 				break
 
 				case ModuleType.ENABLED:
-					const idx = event.dataTransfer.getData(mimes.value.moduleIdx)
+					{
+						const idx = parseInt(event.dataTransfer.getData(mimes.value.moduleIdx))
 
-					enabledModules.value[idx].data.pos = {
-						x: event.clientX - offsetX,
-						y: event.clientY - offsetY
+						const module = enabledModules.value[idx]
+
+						if(module.data === undefined) return
+
+						module.data.pos = {
+							x: event.clientX - offsetX,
+							y: event.clientY - offsetY
+						}
+
+						nextTick(() => {
+							cableStore.updateCables()
+						})
 					}
-
-				nextTick(() => {
-						cableStore.updateCables()
-					})
 				break
 			}
 		}

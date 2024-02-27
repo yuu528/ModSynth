@@ -65,23 +65,33 @@ export default class Oscillator extends Module {
 	onEnable(idx: number) {
 		this._onEnable(idx)
 
-		const freq = this.getControl('frequency').value
-		const type = this.getControl('type').value
+		const freqCtrl = this.getControl('frequency')
+		const typeCtrl = this.getControl('type')
+
+		if(freqCtrl === undefined || typeCtrl === undefined) return
+
+		const freq = freqCtrl.value
+		const type = typeCtrl.value
 
 		this.data.output = this.moduleStore.audioCtx.createOscillator()
+
+		if(!(this.data.output instanceof OscillatorNode)) return
+
 		this.data.output.type = type
-		this.data.output.frequency.setValueAtTime(freq, this.moduleStore.audioCtx.currentTime)
+		this.data.output.frequency.setValueAtTime(freq as number, this.moduleStore.audioCtx.currentTime)
 		this.data.output.start()
 	}
 
 	updateValue(idx: number, id: string, value: number | string) {
+		if(!(this.data.output instanceof OscillatorNode)) return
+
 		switch(id) {
 			case 'type':
 				this.data.output.type = value
 			break
 
 			case 'frequency':
-				this.data.output.frequency.setValueAtTime(value, this.moduleStore.audioCtx.currentTime)
+				this.data.output.frequency.setValueAtTime(value as number, this.moduleStore.audioCtx.currentTime)
 			break
 		}
 	}

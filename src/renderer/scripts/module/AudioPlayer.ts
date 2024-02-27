@@ -89,34 +89,44 @@ export default class AudioPlayer extends Module {
 		this._onEnable(idx)
 
 		const audioCtrl = this.getControl('audio')
+		if(audioCtrl === undefined) return
+
 		audioCtrl.elmId = `m${idx}.${audioCtrl.id}`
 
-		const audioElm = document.getElementById(audioCtrl.elmId)
+		const audioElm = document.getElementById(audioCtrl.elmId) as HTMLAudioElement
 
-		this.data.output = this.moduleStore.audioCtx.createMediaElementSource(audioElm)
 
-		const eventNames = [
+		this.data.output = this.moduleStore.audioCtx.createMediaElementSource(audioElm);
+
+		[
 			'canplay',
 			'loadedmetadata',
 			'pause',
 			'play',
 			'timeupdate'
-		]
-
-		eventNames.forEach(eventName => {
+		].forEach(eventName => {
 			audioElm.addEventListener(eventName, (event) => {
-				this.moduleStore.updateValue(audioElm.dataset.moduleidx, audioElm.dataset.id, event)
+				if(audioElm.dataset.moduleidx === undefined || audioElm.dataset.id === undefined) return
+
+				this.moduleStore.updateValue(parseInt(audioElm.dataset.moduleidx), audioElm.dataset.id, event)
 			})
 		})
 	}
 
 	updateValue(idx: number, id: string, value: number | File | Event) {
+		if(!(this.data.output instanceof MediaElementAudioSourceNode)) return
 		const audioElm = this.data.output.mediaElement
 
 		switch(id) {
 			case 'audio':
+				if(!(value instanceof Event)) return
+
+				const target = value.target as HTMLAudioElement
+
 				const seekCtrl = this.getControl('seek')
 				const playCtrl = this.getControl('play')
+
+				if(seekCtrl === undefined || playCtrl === undefined) return
 
 				switch(value.type) {
 					case 'canplay':
@@ -124,7 +134,7 @@ export default class AudioPlayer extends Module {
 					break
 
 					case 'loadedmetadata':
-						seekCtrl.max = value.target.duration
+						seekCtrl.max = target.duration
 					break
 
 					case 'pause':
@@ -136,17 +146,20 @@ export default class AudioPlayer extends Module {
 					break
 
 					case 'timeupdate':
-						seekCtrl.value = value.target.currentTime
+						seekCtrl.value = target.currentTime
 					break
 				}
 			break
 
 			case 'file':
+				if(!(value instanceof File)) return
+
 				audioElm.src = URL.createObjectURL(value)
 				audioElm.load()
 			break
 
 			case 'seek':
+				if(typeof value !== 'number') return
 				audioElm.currentTime = value
 			break
 
@@ -159,15 +172,17 @@ export default class AudioPlayer extends Module {
 			break
 
 			case 'volume':
+				if(typeof value !== 'number') return
 				audioElm.volume = value
 			break
 
 			case 'speed':
+				if(typeof value !== 'number') return
 				audioElm.playbackRate = value
 			break
 
 			case 'pitchCor':
-				audioElm.preservesPitch = value
+				audioElm.preservesPitch = !!value
 			break
 		}
 	}

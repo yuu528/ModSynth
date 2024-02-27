@@ -44,17 +44,21 @@ const props = defineProps([
   'dataModuleIdx'
 ])
 
-function mouseEnter(event) {
-  const module = event.target.closest('.enabledModule')
+function mouseEnter(event: MouseEvent) {
+  if(event.target === null) return
+
+  const module = (event.target as HTMLElement).closest('.enabledModule')
   if(module !== null) {
-    module.setAttribute('draggable', false)
+    module.setAttribute('draggable', 'false')
   }
 }
 
-function mouseOut(event) {
-  const module = event.target.closest('.enabledModule')
+function mouseOut(event: MouseEvent) {
+  if(event.target === null) return
+
+  const module = (event.target as HTMLElement).closest('.enabledModule')
   if(module !== null) {
-    module.setAttribute('draggable', true)
+    module.setAttribute('draggable', 'true')
   }
 }
 </script>

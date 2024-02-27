@@ -25,7 +25,7 @@ import { computed } from 'vue'
 
 import { NumberUtil } from '../scripts/util/NumberUtil'
 
-const model = defineModel()
+const model = defineModel<number>({ required: true })
 const props = defineProps([
 	'min', 'max', 'step', 'change', 'label', 'si', 'disabled'
 ])
@@ -71,7 +71,7 @@ function calcDeg() {
 	return ((model.value - props.min) / (props.max - props.min)) * 270 - 135
 }
 
-function wheel(event) {
+function wheel(event: WheelEvent) {
 	event.preventDefault()
 	if(!props.disabled) {
 		if (0 < event.deltaY) {
@@ -82,24 +82,28 @@ function wheel(event) {
 	}
 }
 
-function keypress(event) {
+function keypress(event: KeyboardEvent) {
+	if(event.target === null) return
+
+	const target = event.target as HTMLElement
+
 	if(props.disabled) {
 		event.preventDefault()
 		return
 	} else {
-		if(isNaN(event.key) && event.key !== 'Enter' && event.key !== '.') {
+		if(isNaN(parseInt(event.key)) && event.key !== 'Enter' && event.key !== '.') {
 			event.preventDefault()
 		} else if(event.key === 'Enter') {
-			const value = Number(event.target.innerText)
+			const value = Number(target.innerText)
 
-			if(isNaN(event.target.innerText)) {
-				event.target.innerText = model.value
+			if(isNaN(parseInt(target.innerText))) {
+				target.innerText = model.value.toString()
 			} else if(props.min <= value && value <= props.max) {
 				setModelValue(value)
 			} else {
-				event.target.innerText = model.value
+				target.innerText = model.value.toString()
 			}
-			event.target.blur()
+			target.blur()
 		}
 	}
 }

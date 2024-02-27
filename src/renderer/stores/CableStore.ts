@@ -5,45 +5,34 @@ import { useModuleStore } from './ModuleStore'
 
 import JackType from '../scripts/enum/JackType'
 
-export class Cable {
-	private _j1: string
-	private _j2: string
+export interface Cable {
+	j1: string
+	j2: string
+}
 
-	constructor(j1: string, j2: string) {
-		this._j1 = j1
-		this._j2 = j2
-	}
-
-	set j1(j1: string) {
-		this._j1 = j1
-	}
-
-	set j2(j2: string) {
-		this._j2 = j2
-	}
-
-	get j1() {
-		return this._j1
-	}
-
-	get j2() {
-		return this._j2
-	}
+export interface CableData {
+	p1: { x: number, y: number }
+	p2: { x: number, y: number }
 }
 
 export const useCableStore = defineStore('cable', () => {
 	const moduleStore = useModuleStore()
 
-	const cables = ref([])
-	const cablesData = ref([])
-	const jacks = ref([])
+	const cables = ref<Cable[]>([])
+	const cablesData = ref<CableData[]>([])
+	const jacks = ref<HTMLElement[]>([])
 	const mimes = ref({
 		cableId1: 'application/mscable.id1'
 	})
 
 	function add(p1: string, p2: string) {
-		const type1 = parseInt(getJack(p1).dataset.type)
-		const type2 = parseInt(getJack(p2).dataset.type)
+		const jack1 = getJack(p1)
+		const jack2 = getJack(p2)
+
+		if(jack1.dataset.type === undefined || jack2.dataset.type === undefined) return
+
+		const type1 = parseInt(jack1.dataset.type)
+		const type2 = parseInt(jack2.dataset.type)
 
 		if(type1 === JackType.AUDIO_OUTPUT && type2 === JackType.AUDIO_INPUT) {
 			// nothing
@@ -59,9 +48,10 @@ export const useCableStore = defineStore('cable', () => {
 		if(cables.value.every(cable =>
 			!(cable.j1 === p1 && cable.j2 === p2)
 		)) {
-			cables.value.push(
-				new Cable(p1, p2)
-			)
+			cables.value.push({
+				j1: p1,
+				j2: p2
+			})
 
 			updateCables()
 
@@ -100,9 +90,15 @@ export const useCableStore = defineStore('cable', () => {
 	}
 
 	function getJack(id: string) {
-		return jacks.value.find(jack =>
+		const jack = jacks.value.find(jack =>
 			jack.dataset.id === id
 		)
+
+		if(jack === undefined) {
+			throw new Error(`Jack ${id} not found`)
+		}
+
+		return jack
 	}
 
 	function getJackPos(id: string) {
@@ -114,12 +110,12 @@ export const useCableStore = defineStore('cable', () => {
 		}
 	}
 
-	function getParentModuleDOM(id: string) {
-		return getJack(id).closest('.enabledModule')
-	}
-
 	function getParentModule(id: string) {
-		return moduleStore.enabledModules[getJack(id).dataset.moduleidx]
+		const jack = getJack(id) as HTMLElement
+
+		if(jack.dataset.moduleidx === undefined) return undefined
+
+		return moduleStore.enabledModules[parseInt(jack.dataset.moduleidx)]
 	}
 
 	function getAudioNode(id: string) {
@@ -127,17 +123,22 @@ export const useCableStore = defineStore('cable', () => {
 			return moduleStore.audioCtx.destination
 		}
 
-		const jack = getJack(id)
+		const jack = getJack(id) as HTMLElement
 		const module = getParentModule(id)
+
+		if(jack.dataset.type === undefined || module === undefined) return null
+		if(module.data === undefined) return null
 
 		let result = undefined
 		if(jack !== undefined && module !== undefined) {
 			switch(parseInt(jack.dataset.type)) {
 				case JackType.AUDIO_OUTPUT:
+					if(module.data.output === undefined) return null
 					result = module.data.output
 					break
 
 				case JackType.AUDIO_INPUT:
+					if(module.data.input === undefined) return null
 					result = module.data.input
 					break
 			}
@@ -174,39 +175,68 @@ export const useCableStore = defineStore('cable', () => {
 
 		const maxY = Math.max(...newData.map(cable => Math.max(cable.p1.y, cable.p2.y)))
 		if(isFinite(maxY)) {
-			document.getElementById('cable-svg').setAttribute('height', `${maxY}px`)
+			const svgElm = document.getElementById('cable-svg')
+			if(svgElm === null) return
+
+			svgElm.setAttribute('height', `${maxY}px`)
 		}
 
 		cablesData.value = newData
 	}
 
-	function dragStart(event) {
-		if(event.target.closest('.enabledModule') !== null || event.target.dataset.id.indexOf('master') !== -1) {
-			event.dataTransfer.setData(mimes.value.cableId1, event.target.dataset.id)
+	function dragStart(event: DragEvent) {
+		if(event.target === null) return
+		if(event.dataTransfer === null) return
+
+		const target = event.target as HTMLElement
+
+		if(target.dataset.id === undefined) return
+
+		if(target.closest('.enabledModule') !== null || target.dataset.id.indexOf('master') !== -1) {
+			event.dataTransfer.setData(mimes.value.cableId1, target.dataset.id)
 		}
 	}
 
-	function dragOver(event) {
+	function dragOver(event: DragEvent) {
+		if(event.target === null) return
+		if(event.dataTransfer === null) return
+
 		if(event.dataTransfer.types.includes(mimes.value.cableId1)) {
 			event.preventDefault()
 		}
 	}
 
-	function dragEnd(event) {
+	function dragEnd(event: DragEvent) {
+		if(event.target === null) return
+		if(event.dataTransfer === null) return
+
 		event.dataTransfer.clearData()
 	}
 
-	function drop(event) {
+	function drop(event: DragEvent) {
+		if(event.target === null) return
+		if(event.dataTransfer === null) return
+
+		const target = event.target as HTMLElement
+
+		if(target.dataset.id === undefined) return
+
 		if(event.dataTransfer.types.includes(mimes.value.cableId1)) {
 			const id1 = event.dataTransfer.getData(mimes.value.cableId1)
-			const id2 = event.target.dataset.id
+			const id2 = target.dataset.id
 
 			add(id1, id2)
 		}
 	}
 
-	function click(event) {
-		remove(event.target.dataset.id)
+	function click(event: MouseEvent) {
+		if(event.target === null) return
+
+		const target = event.target as HTMLElement
+
+		if(target.dataset.id === undefined) return
+
+		remove(target.dataset.id)
 	}
 
 	return {

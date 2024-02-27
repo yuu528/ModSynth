@@ -1,5 +1,7 @@
 import { toRaw } from 'vue'
 
+import { Cable } from '../../stores/CableStore'
+
 import ModuleCategory from '../enum/ModuleCategory'
 import JackType from '../enum/JackType'
 import Component from '../enum/Component'
@@ -34,6 +36,8 @@ export default class InputDevice extends Module {
 		super();
 
 		(async (data) => {
+			if(data.controls === undefined) return
+
 			const devices = (await navigator.mediaDevices.enumerateDevices()).filter(device =>
 				device.kind === 'audioinput'
 			).map(device => ({
@@ -57,7 +61,11 @@ export default class InputDevice extends Module {
 
 		const deviceCtrl = this.getControl('device');
 
+		if(deviceCtrl === undefined) return
+
 		(async () => {
+			if(typeof deviceCtrl.value !== 'string') return
+
 			this.data.output = this.moduleStore.audioCtx.createMediaStreamSource(
 				await navigator.mediaDevices.getUserMedia({
 					audio: {
@@ -83,7 +91,7 @@ export default class InputDevice extends Module {
 					})
 
 					const jackId = `m${idx}.Out`
-					const removed = this.cableStore.remove(jackId)
+					const removed: Cable[] = this.cableStore.remove(jackId)
 
 					this.data.output = this.moduleStore.audioCtx.createMediaStreamSource(newStream)
 

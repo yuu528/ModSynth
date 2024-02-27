@@ -1,9 +1,9 @@
 export class NumberUtil {
-	public static getNumberLength(value: number) {
-		return parseInt(value).toString().length
+	public static getNumberLength(value: number): number {
+		return Math.floor(value).toString().length
 	}
 
-	public static toSI(value: number) {
+	public static toSI(value: number): string {
 		if(value < 1e3) {
 			return value.toString()
 		} else if(value < 1e6) {
@@ -13,7 +13,7 @@ export class NumberUtil {
 		return value.toString()
 	}
 
-	public static getNiceRoundNumber(value: number, count: number | undefined) {
+	public static getNiceRoundNumber(value: number, count?: number) {
 		let offset
 		if(count === undefined) {
 			offset = Math.pow(10, Math.floor(value).toString().length - 1)

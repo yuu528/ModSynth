@@ -1,6 +1,6 @@
 enum ModuleType {
-	BASE,
-	ENABLED
+	BASE = 'base',
+	ENABLED = 'enabled'
 }
 
 export default ModuleType

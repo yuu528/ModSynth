@@ -79,6 +79,9 @@ export default class Monitor extends Module {
 		this._onEnable(idx)
 
 		this.data.input = this.moduleStore.audioCtx.createAnalyser()
+
+		if(!(this.data.input instanceof AnalyserNode)) return
+
 		this.data.input.fftSize = 2048
 
 		this.drawScope()
@@ -86,42 +89,47 @@ export default class Monitor extends Module {
 	}
 
 	updateValue(idx: number, id: string, value: number) {
+		const control = this.getControl(id)
+
+		if(control === undefined) return
+
 		switch(id) {
 			case 'fftMax':
-				this.data.monitors[1].fftMax = value
+				control.value = value
 			break
 
 			case 'scopeSize':
-				this.data.monitors[0].scopeSize = value
+				control.value = value
 			break
 
 			case 'scopeAmp':
-				this.data.monitors[0].scopeAmp = value
+				control.value = value
 			break
 		}
 	}
 
-	drawScope() {
+	private drawScope() {
 		requestAnimationFrame(() => this.drawScope())
-		const canvas = document.getElementById(`m${this.data.idx}.monitor.${this.data.monitors[0].id}`)
+		if(this.data === undefined) return
+		if(this.data.monitors === undefined) return
+		if(!(this.data.input instanceof AnalyserNode)) return
+
+		const canvas = document.getElementById(`m${this.data.idx}.monitor.${this.data.monitors[0].id}`) as HTMLCanvasElement
 
 		if(canvas !== null) {
 			const ctx = canvas.getContext('2d')
 
-			const scopeSizeControl = this.getControl('scopeSize')
-			const scopeAmpControl = this.getControl('scopeAmp')
-			const maxScopeSize = scopeSizeControl.max
-			let scopeSize = scopeSizeControl.value
+			if(ctx === null) return
 
-			if(this.data.monitors[0].scopeSize !== undefined) {
-				scopeSize = this.data.monitors[0].scopeSize
-			}
+			const scopeSizeCtrl = this.getControl('scopeSize')
+			const scopeAmpCtrl = this.getControl('scopeAmp')
 
-			let scopeAmp = scopeAmpControl.value
+			if(scopeSizeCtrl === undefined || scopeAmpCtrl === undefined) return
+			if(scopeSizeCtrl.max === undefined || scopeSizeCtrl.value === undefined || scopeAmpCtrl.value === undefined) return
 
-			if(this.data.monitors[0].scopeAmp !== undefined) {
-				scopeAmp = this.data.monitors[0].scopeAmp
-			}
+			const maxScopeSize = scopeSizeCtrl.max as number
+			const scopeSize = scopeSizeCtrl.value as number
+			const scopeAmp = scopeAmpCtrl.value as number
 
 			const len = this.data.input.frequencyBinCount / (maxScopeSize - scopeSize + 1)
 			const sliceWidth = (canvas.width) / (len - 2)
@@ -152,12 +160,18 @@ export default class Monitor extends Module {
 		}
 	}
 
-	drawFFT() {
+	private drawFFT() {
 		requestAnimationFrame(() => this.drawFFT())
-		const canvas = document.getElementById(`m${this.data.idx}.monitor.${this.data.monitors[1].id}`)
+		if(this.data === undefined) return
+		if(this.data.monitors === undefined) return
+		if(!(this.data.input instanceof AnalyserNode)) return
+
+		const canvas = document.getElementById(`m${this.data.idx}.monitor.${this.data.monitors[1].id}`) as HTMLCanvasElement
 
 		if(canvas !== null) {
 			const ctx = canvas.getContext('2d')
+
+			if(ctx === null) return
 
 			const len = this.data.input.frequencyBinCount
 
@@ -166,11 +180,14 @@ export default class Monitor extends Module {
 
 			const freqStep = this.moduleStore.audioCtx.sampleRate / this.data.input.fftSize
 
-			let fftMax = this.getControl('fftMax').value
+			const fftMaxCtrl = this.getControl('fftMax')
 
-			if(this.data.monitors[1].fftMax !== undefined) {
-				fftMax = this.data.monitors[1].fftMax
-			}
+			if(fftMaxCtrl === undefined) return
+
+			if(fftMaxCtrl.value === undefined) return
+
+			const fftMax = fftMaxCtrl.value as number
+
 			const maxFreq = Math.min(fftMax, freqStep * len)
 
 			const sliceWidth = (canvas.width) / (maxFreq / freqStep)
@@ -214,7 +231,7 @@ export default class Monitor extends Module {
 					if(rulerK >= 1) {
 						text = `${rulerK}k`
 					} else {
-						text = rulers[r]
+						text = rulers[r].toString()
 					}
 					const meas = ctx.measureText(text)
 					const textPosX = Math.min(Math.max(0, x - meas.width / 2), canvas.width - meas.width)
@@ -230,6 +247,5 @@ export default class Monitor extends Module {
 
 			ctx.stroke()
 		}
-
 	}
 }

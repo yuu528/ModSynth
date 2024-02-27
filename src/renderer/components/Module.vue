@@ -35,7 +35,7 @@
             :min="control.min"
             :max="control.max"
             :step="control.step"
-            @change="event => { moduleStore.updateValue(props.idx, control.id, event.target.value) }"
+            @update:modelValue="value => { moduleStore.updateValue(props.idx, control.id, value) }"
           >
           </v-text-field>
           <Select
@@ -44,7 +44,7 @@
             :class="control.id"
             :label="control.name"
             :items="control.items"
-            :update="event => { moduleStore.updateValue(props.idx, control.id, event) }"
+            :update="(value: string) => { moduleStore.updateValue(props.idx, control.id, value) }"
           />
           <Knob
             v-if="control.component === Component.Knob"
@@ -56,7 +56,7 @@
             :step="control.step"
             :si="control.si"
             :disabled="control.disabled"
-            :change="value => { moduleStore.updateValue(props.idx, control.id, value) }"
+            :change="(value: number) => { moduleStore.updateValue(props.idx, control.id, value) }"
           />
           <v-file-input
             v-if="control.component === Component.FileInput"
@@ -80,7 +80,7 @@
             :class="control.id"
             :active="control.active"
             :disabled="control.disabled"
-            @click="event => { moduleStore.updateValue(props.idx, control.id, null) }"
+            @click="() => { moduleStore.updateValue(props.idx, control.id, null) }"
           >
             {{ control.name }}
           </v-btn>

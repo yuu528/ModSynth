@@ -9,9 +9,12 @@ export default interface Control {
 	min?: number
 	max?: number
 	step?: number
+	si?: boolean
 
 	items?: SelectItem[]
 
 	value?: number | string
 	disabled?: boolean
+
+	elmId?: string
 }
