@@ -29,6 +29,8 @@ export const useCableStore = defineStore('cable', () => {
 		const jack1 = getJack(p1)
 		const jack2 = getJack(p2)
 
+		if(jack1 === undefined || jack2 === undefined) return
+
 		if(jack1.dataset.type === undefined || jack2.dataset.type === undefined) return
 
 		const type1 = parseInt(jack1.dataset.type)
@@ -90,19 +92,17 @@ export const useCableStore = defineStore('cable', () => {
 	}
 
 	function getJack(id: string) {
-		const jack = jacks.value.find(jack =>
+		return jacks.value.find(jack =>
 			jack.dataset.id === id
 		)
-
-		if(jack === undefined) {
-			throw new Error(`Jack ${id} not found`)
-		}
-
-		return jack
 	}
 
 	function getJackPos(id: string) {
-		const pos = getJack(id).getBoundingClientRect()
+		const jack = getJack(id)
+
+		if(jack === undefined) return undefined
+
+		const pos = jack.getBoundingClientRect()
 
 		return {
 			x: pos.left + pos.width / 2 + window.scrollX,
@@ -157,11 +157,13 @@ export const useCableStore = defineStore('cable', () => {
 			getJack(cable.j1) !== undefined && getJack(cable.j2) !== undefined
 		)
 
-		const newData = cables.value.map(cable => {
+		const newData = cables.value.reduce((acc, cable) => {
 			const p1 = getJackPos(cable.j1)
 			const p2 = getJackPos(cable.j2)
 
-			return {
+			if(p1 === undefined || p2 === undefined) return acc
+
+			acc.push({
 				p1: {
 					x: p1.x,
 					y: p1.y
@@ -170,8 +172,10 @@ export const useCableStore = defineStore('cable', () => {
 					x: p2.x,
 					y: p2.y
 				}
-			}
-		})
+			})
+
+			return acc
+		}, [] as CableData[])
 
 		const maxY = Math.max(...newData.map(cable => Math.max(cable.p1.y, cable.p2.y)))
 		if(isFinite(maxY)) {
