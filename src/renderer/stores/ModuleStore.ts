@@ -172,17 +172,21 @@ export const useModuleStore = defineStore('module', () => {
 					{
 						const id = event.dataTransfer.getData(mimes.value.moduleId)
 
-						const module = getModuleBase(id).clone()
+						try {
+							const module = getModuleBase(id).clone()
 
-						if(module.data === undefined) return
+							if(module.data === undefined) return
 
-						module.data.id = id
-						module.data.pos = {
-							x: event.clientX - offsetX,
-							y: event.clientY - offsetY
+							module.data.id = id
+							module.data.pos = {
+								x: event.clientX - offsetX,
+								y: event.clientY - offsetY
+							}
+
+							add(module)
+						} catch(e) {
+							// ignore
 						}
-
-						add(module)
 					}
 				break
 
