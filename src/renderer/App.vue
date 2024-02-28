@@ -16,7 +16,7 @@
           </v-tab>
         </v-tabs>
 
-        <v-sheet>
+        <v-sheet class="overflow-y-auto" style="height: calc(100% - 48px)">
           <v-window v-model="moduleTab">
             <v-window-item
               v-for="(modules, category) in modulesByCategory"
@@ -43,30 +43,28 @@
         </v-sheet>
       </v-sheet>
       <v-sheet
-        class="flex-grow-1"
+        id="moduleCase"
+        class="flex-grow-1 h-100 overflow-y-auto d-flex flex-wrap"
         @dragover="moduleStore.dragOver"
         @drop="moduleStore.drop"
       >
-        <template v-for="(module, idx) in enabledModules">
+        <template v-for="idx in enabledModulesOrder">
           <Module
-            v-if="module !== undefined && module.data !== undefined && module.data.pos !== undefined"
+            v-if="enabledModules[idx] !== undefined && enabledModules[idx].data !== undefined && enabledModules[idx].data.pos !== undefined"
             draggable="true"
             class="enabledModule"
             :key="idx"
-            :data-id="module.data.id"
+            :data-id="enabledModules[idx].data.id"
             :data-idx="idx"
             :idx="idx"
-            :name="module.data.name"
-            :controls="module.data.controls"
-            :monitors="module.data.monitors"
-            :jacks="module.data.jacks"
-            :style="{
-              position: 'absolute',
-              left: module.data.pos.x + 'px',
-              top: module.data.pos.y + 'px'
-            }"
+            :name="enabledModules[idx].data.name"
+            :controls="enabledModules[idx].data.controls"
+            :monitors="enabledModules[idx].data.monitors"
+            :jacks="enabledModules[idx].data.jacks"
             @dragstart="moduleStore.dragStart"
             @dragend="moduleStore.dragEnd"
+            @dragover="moduleStore.enabledDragOver"
+            @drop="moduleStore.enabledDrop"
           />
         </template>
       </v-sheet>
@@ -126,6 +124,8 @@ for(const module of moduleStore.modules) {
 
   modulesByCategory[module.data.category].push(module as ModuleClass)
 }
+
+const enabledModulesOrder = computed(() => moduleStore.enabledModulesOrder)
 
 const enabledModules = computed(() => moduleStore.enabledModules)
 
