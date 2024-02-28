@@ -96,6 +96,17 @@
             :step="control.step"
             @update:modelValue="value => { moduleStore.updateValue(props.idx, control.id, value) }"
           ></v-slider>
+          <Progress
+            v-if="control.component === Component.Progress"
+            v-model="control.value"
+            :class="control.id"
+            :label="control.name"
+            :min="control.min"
+            :max="control.max"
+            :valueUnit="control.valueUnit"
+            :color="control.color"
+            :bgColor="control.bgColor"
+          />
         </v-col>
       </v-row>
       <v-row no-gutters>
@@ -114,6 +125,7 @@ import Component from '../scripts/enum/Component'
 
 import Knob from './Knob.vue'
 import Jack from './Jack.vue'
+import Progress from './Progress.vue'
 import Select from './Select.vue'
 
 const moduleStore = useModuleStore()

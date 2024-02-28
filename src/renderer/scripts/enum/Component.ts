@@ -1,8 +1,9 @@
 enum Component {
 	Audio,
-	Knob,
 	Btn,
 	FileInput,
+	Knob,
+	Progress,
 	Select,
 	Slider,
 	TextField

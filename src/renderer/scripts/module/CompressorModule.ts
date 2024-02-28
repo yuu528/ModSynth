@@ -65,6 +65,17 @@ export default class CompressorModule extends Module {
 				value: 0.25,
 				si: true,
 				valueUnit: 's'
+			},
+			{
+				id: 'gainReduction',
+				name: 'GR',
+				component: Component.Progress,
+				min: -20,
+				max: 0,
+				value: 0,
+				valueUnit: 'dB',
+				color: 'gray',
+				bgColor: 'red'
 			}
 		],
 		jacks: [
@@ -106,6 +117,8 @@ export default class CompressorModule extends Module {
 		this.data.output.release.setValueAtTime(ctrls.release.value as number, this.moduleStore.audioCtx.currentTime)
 
 		this.data.input = this.data.output
+
+		this.drawGR()
 	}
 
 	updateValue(idx: number, id: string, value: number | string) {
@@ -131,6 +144,25 @@ export default class CompressorModule extends Module {
 			case 'release':
 				this.data.output.release.setValueAtTime(value as number, this.moduleStore.audioCtx.currentTime)
 			break
+
+			case 'gainReduction':
+				const ctrl = this.getControl('gainReduction')
+
+				if(ctrl === undefined) return
+
+				ctrl.value = value as number
+			break
 		}
+	}
+
+	private drawGR() {
+		requestAnimationFrame(() => this.drawGR())
+
+		const ctrl = this.getControl('gainReduction')
+		const output = this.data.output as DynamicsCompressorNode | undefined
+
+		if(ctrl === undefined || output === undefined || this.data.idx === undefined) return
+
+		this.moduleStore.updateValue(this.data.idx, ctrl.id, output.reduction as number)
 	}
 }

@@ -16,6 +16,9 @@ export default interface Control {
 	value?: number | string
 	disabled?: boolean
 
+	color?: string
+	bgColor?: string
+
 	valueMap?: (value: number | string) => number | string
 	valueUnit?: string
 

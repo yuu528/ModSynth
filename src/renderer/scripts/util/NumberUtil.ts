@@ -81,4 +81,8 @@ export class NumberUtil {
 
 		return Math.floor(value / offset) * offset
 	}
+
+	public static map(value: number, min: number, max: number, newMin: number, newMax: number): number {
+		return (value - min) * (newMax - newMin) / (max - min) + newMin
+	}
 }
