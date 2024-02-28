@@ -100,6 +100,7 @@ export default class AudioPlayerModule extends Module {
 
 		[
 			'canplay',
+			'emptied',
 			'loadedmetadata',
 			'pause',
 			'play',
@@ -131,6 +132,10 @@ export default class AudioPlayerModule extends Module {
 				switch(value.type) {
 					case 'canplay':
 						playCtrl.disabled = false
+					break
+
+					case 'emptied':
+						playCtrl.value = 0
 					break
 
 					case 'loadedmetadata':
