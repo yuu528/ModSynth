@@ -27,19 +27,37 @@ import { NumberUtil } from '../scripts/util/NumberUtil'
 
 const model = defineModel<number>({ required: true })
 const props = defineProps([
-	'min', 'max', 'step', 'change', 'label', 'si', 'disabled'
+	'min',
+	'max',
+	'step',
+	'change',
+	'label',
+	'si',
+	'disabled',
+	'valueMap',
+	'valueUnit'
 ])
 
 const value = computed(() => {
-	if(props.si) {
-		return NumberUtil.toSI(model.value)
+	let value: number | string = model.value
+
+	if(props.valueMap !== undefined) {
+		value = props.valueMap(model.value)
+	}
+
+	if(props.si && typeof value === 'number') {
+		value = NumberUtil.toSI(value)
 	}
 
 	if(props.min === 0 && props.max === 1 && props.step === 1) {
-		return model.value ? 'On' : 'Off'
+		return value ? 'On' : 'Off'
 	}
 
-	return model.value
+	if(props.valueUnit !== undefined) {
+		return `${value}${props.valueUnit}`
+	}
+
+	return value
 })
 
 function getDecPointLen(n: number) {
@@ -91,17 +109,28 @@ function keypress(event: KeyboardEvent) {
 		event.preventDefault()
 		return
 	} else {
-		if(isNaN(parseInt(event.key)) && event.key !== 'Enter' && event.key !== '.') {
+		if(isNaN(parseInt(event.key)) && event.key !== 'Enter' && event.key !== '.' && !NumberUtil.isSIUnitPrefix(event.key) && props.valueUnit.indexOf(event.key) === -1) {
 			event.preventDefault()
 		} else if(event.key === 'Enter') {
-			const value = Number(target.innerText)
+			event.preventDefault()
 
-			if(isNaN(parseInt(target.innerText))) {
-				target.innerText = model.value.toString()
-			} else if(props.min <= value && value <= props.max) {
-				setModelValue(value)
+			let targetText = target.innerText.replace(
+				new RegExp(`${props.valueUnit}$`),
+				''
+			)
+			let newValue = Number(value)
+
+			if(NumberUtil.isSIValue(targetText)) {
+				newValue = NumberUtil.fromSI(targetText)
+			} else if(isNaN(parseInt(targetText))) {
+				target.innerText = value.value.toString()
+				return
+			}
+
+			if(props.min <= newValue && newValue <= props.max) {
+				setModelValue(newValue)
 			} else {
-				target.innerText = model.value.toString()
+				target.innerText = value.value.toString()
 			}
 			target.blur()
 		}
@@ -131,6 +160,8 @@ function keypress(event: KeyboardEvent) {
 	font-size: 12px;
 	width: 100%;
 	text-align: center;
+	overflow: visible;
+	white-space: nowrap;
 }
 
 .label {

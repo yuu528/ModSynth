@@ -29,6 +29,26 @@ export default class Module {
 		return this.data.controls.findIndex(control => control.id === id)
 	}
 
+	getControls(): { [id: string]: Control } {
+		if(this.data === undefined) return {}
+		if(this.data.controls === undefined) return {}
+
+		const result: { [id: string]: Control } = {}
+
+		this.data.controls.forEach(control => {
+			result[control.id] = control
+		})
+
+		return result
+	}
+
+	getControlIds(): string[] {
+		if(this.data === undefined) return {}
+		if(this.data.controls === undefined) return {}
+
+		return this.data.controls.map(control => control.id)
+	}
+
 	protected _onEnable(idx: number) {
 		if(this.data === undefined) return
 

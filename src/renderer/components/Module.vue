@@ -56,6 +56,8 @@
             :step="control.step"
             :si="control.si"
             :disabled="control.disabled"
+            :valueMap="control.valueMap"
+            :valueUnit="control.valueUnit"
             :change="(value: number) => { moduleStore.updateValue(props.idx, control.id, value) }"
           />
           <v-file-input

@@ -10,6 +10,7 @@ import ModuleType from '../scripts/enum/ModuleType'
 import Module from '../scripts/module/Module'
 
 import AudioPlayerModule from '../scripts/module/AudioPlayerModule'
+import CompressorModule from '../scripts/module/CompressorModule'
 import InputDeviceModule from '../scripts/module/InputDeviceModule'
 import MonitorModule from '../scripts/module/MonitorModule'
 import OscillatorModule from '../scripts/module/OscillatorModule'
@@ -36,6 +37,7 @@ export const useModuleStore = defineStore('module', () => {
 	[
 		new AudioPlayerModule(),
 		new InputDeviceModule(),
+		new CompressorModule(),
 		new MonitorModule(),
 		new OscillatorModule(),
 		new VolumeModule()

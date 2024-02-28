@@ -16,5 +16,8 @@ export default interface Control {
 	value?: number | string
 	disabled?: boolean
 
+	valueMap?: (value: number | string) => number | string
+	valueUnit?: string
+
 	elmId?: string
 }
