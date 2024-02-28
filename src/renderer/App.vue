@@ -50,7 +50,7 @@
       >
         <template v-for="idx in enabledModulesOrder">
           <Module
-            v-if="enabledModules[idx] !== undefined && enabledModules[idx].data !== undefined && enabledModules[idx].data.pos !== undefined"
+            v-if="enabledModules[idx] !== undefined && enabledModules[idx].data !== undefined"
             draggable="true"
             class="enabledModule"
             :key="idx"

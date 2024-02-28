@@ -47,7 +47,7 @@ export const useModuleStore = defineStore('module', () => {
 		modules.value.push(module)
 	})
 
-	async function add(module: Module) {
+	function add(module: Module): number {
 		const idx = enabledModules.value.push(module) - 1
 
 		enabledModulesOrder.value.push(idx)
@@ -55,6 +55,8 @@ export const useModuleStore = defineStore('module', () => {
 		nextTick(() => {
 			module.onEnable(idx)
 		})
+
+		return idx
 	}
 
 	function remove(idx: number) {
@@ -162,18 +164,38 @@ export const useModuleStore = defineStore('module', () => {
 		if(event.dataTransfer === null) return
 
 		if(event.dataTransfer.types.includes(mimes.value.moduleType)) {
-			if(event.dataTransfer.getData(mimes.value.moduleType) == ModuleType.ENABLED) {
-				event.stopPropagation()
-				const idx = parseInt(event.dataTransfer.getData(mimes.value.moduleIdx))
-				const target = event.target as HTMLElement
-				const targetModule = target.closest('.enabledModule') as HTMLElement | null
+			const target = event.target as HTMLElement
+			const targetModule = target.closest('.enabledModule') as HTMLElement | null
 
-				if(targetModule === null) return
-				if(targetModule.dataset.idx === undefined) return
+			if(targetModule === null) return
+			if(targetModule.dataset.idx === undefined) return
 
-				const targetModuleIdx = parseInt(targetModule.dataset.idx)
+			const targetModuleIdx = parseInt(targetModule.dataset.idx)
 
-				reorder(idx, targetModuleIdx)
+			switch(event.dataTransfer.getData(mimes.value.moduleType)) {
+				case ModuleType.BASE:
+					{
+						event.stopPropagation()
+
+						const id = event.dataTransfer.getData(mimes.value.moduleId)
+						const module = getModuleBase(id).clone()
+
+						if(module.data === undefined) return
+
+						module.data.id = id
+
+						reorder(add(module), targetModuleIdx)
+					}
+				break
+
+				case ModuleType.ENABLED:
+					{
+						event.stopPropagation()
+						const idx = parseInt(event.dataTransfer.getData(mimes.value.moduleIdx))
+
+						reorder(idx, targetModuleIdx)
+					}
+				break
 			}
 		}
 	}
@@ -233,10 +255,6 @@ export const useModuleStore = defineStore('module', () => {
 						if(module.data === undefined) return
 
 						module.data.id = id
-						module.data.pos = {
-							x: event.clientX - offsetX - target.getBoundingClientRect().left + target.scrollLeft,
-							y: event.clientY - offsetY - target.getBoundingClientRect().top + target.scrollTop
-						}
 
 						add(module)
 					} catch(e) {
