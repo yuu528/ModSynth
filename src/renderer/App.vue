@@ -128,4 +128,6 @@ for(const module of moduleStore.modules) {
 }
 
 const enabledModules = computed(() => moduleStore.enabledModules)
+
+window.addEventListener('resize', cableStore.updateCables)
 </script>
