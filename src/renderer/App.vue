@@ -23,11 +23,12 @@
               :key="category"
               :value="category"
             >
-              <v-sheet v-for="(module, id) in modules" :key="id">
+              <v-sheet v-for="module in modules" :key="module.data?.id">
                 <Module
+                  v-if="module.data !== undefined"
                   draggable="true"
-                  :data-id="id"
-                  :key="id"
+                  :data-id="module.data.id"
+                  :key="module.data.id"
                   :name="module.data.name"
                   :controls="module.data.controls"
                   :monitors="module.data.monitors"
@@ -48,7 +49,7 @@
       >
         <template v-for="(module, idx) in enabledModules">
           <Module
-            v-if="module !== undefined"
+            v-if="module !== undefined && module.data !== undefined && module.data.pos !== undefined"
             draggable="true"
             class="enabledModule"
             :key="idx"
@@ -95,12 +96,14 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed, ref } from 'vue'
+import { computed, ref } from 'vue'
 
 import { useCableStore } from './stores/CableStore'
 import { useModuleStore } from './stores/ModuleStore'
 
 import JackType from './scripts/enum/JackType'
+
+import ModuleClass from './scripts/module/Module'
 
 import Jack from './components/Jack.vue'
 import Module from './components/Module.vue'
@@ -112,14 +115,16 @@ const cables = computed(() => cableStore.cablesData)
 
 const moduleTab = ref(null)
 
-let modulesByCategory = {}
+let modulesByCategory: { [category: string]: ModuleClass[] } = {}
 
 for(const module of moduleStore.modules) {
+  if(module.data === undefined) continue
+
   if(!(module.data.category in modulesByCategory)) {
-    modulesByCategory[module.data.category] = {}
+    modulesByCategory[module.data.category] = []
   }
 
-  modulesByCategory[module.data.category][module.data.id] = module
+  modulesByCategory[module.data.category].push(module as ModuleClass)
 }
 
 const enabledModules = computed(() => moduleStore.enabledModules)
