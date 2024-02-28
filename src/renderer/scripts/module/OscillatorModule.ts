@@ -8,7 +8,7 @@ import ModuleData from './interface/ModuleData'
 
 import Module from './Module'
 
-export default class Oscillator extends Module {
+export default class OscillatorModule extends Module {
 	data: ModuleData = {
 		id: 'oscillator',
 		name: 'Osc',
@@ -57,7 +57,7 @@ export default class Oscillator extends Module {
 	}
 
 	clone() {
-		const result = new Oscillator()
+		const result = new OscillatorModule()
 		result.data = structuredClone(toRaw(this.data))
 		return result
 	}

@@ -8,7 +8,7 @@ import ModuleData from './interface/ModuleData'
 
 import Module from './Module'
 
-export default class AudioPlayer extends Module {
+export default class AudioPlayerModule extends Module {
 	data: ModuleData = {
 		id: 'audioPlayer',
 		name: 'Audio Player',
@@ -80,7 +80,7 @@ export default class AudioPlayer extends Module {
 	}
 
 	clone() {
-		const result = new AudioPlayer()
+		const result = new AudioPlayerModule()
 		result.data = structuredClone(toRaw(this.data))
 		return result
 	}

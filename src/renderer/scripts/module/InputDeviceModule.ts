@@ -10,7 +10,7 @@ import ModuleData from './interface/ModuleData'
 
 import Module from './Module'
 
-export default class InputDevice extends Module {
+export default class InputDeviceModule extends Module {
 	data: ModuleData = {
 		id: 'inputDevice',
 		name: 'Input Device',
@@ -51,7 +51,7 @@ export default class InputDevice extends Module {
 	}
 
 	clone() {
-		const result = new InputDevice()
+		const result = new InputDeviceModule()
 		result.data = structuredClone(toRaw(this.data))
 		return result
 	}

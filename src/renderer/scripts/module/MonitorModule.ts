@@ -10,7 +10,7 @@ import { NumberUtil } from '../util/NumberUtil'
 
 import Module from './Module'
 
-export default class Monitor extends Module {
+export default class MonitorModule extends Module {
 	data: ModuleData = {
 		id: 'monitor',
 		name: 'Monitor',
@@ -70,7 +70,7 @@ export default class Monitor extends Module {
 	private strokeColor = 'limegreen'
 
 	clone() {
-		const result = new Monitor()
+		const result = new MonitorModule()
 		result.data = structuredClone(toRaw(this.data))
 		return result
 	}

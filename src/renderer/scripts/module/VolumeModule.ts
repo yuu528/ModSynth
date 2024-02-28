@@ -8,7 +8,7 @@ import ModuleData from './interface/ModuleData'
 
 import Module from './Module'
 
-export default class Volume extends Module {
+export default class VolumeModule extends Module {
 	data: ModuleData = {
 		id: 'volume',
 		name: 'Volume',
@@ -37,7 +37,7 @@ export default class Volume extends Module {
 	}
 
 	clone() {
-		const result = new Volume()
+		const result = new VolumeModule()
 		result.data = structuredClone(toRaw(this.data))
 		return result
 	}

@@ -9,11 +9,11 @@ import ModuleType from '../scripts/enum/ModuleType'
 
 import Module from '../scripts/module/Module'
 
-import AudioPlayer from '../scripts/module/AudioPlayer'
-import InputDevice from '../scripts/module/InputDevice'
-import Monitor from '../scripts/module/Monitor'
-import Oscillator from '../scripts/module/Oscillator'
-import Volume from '../scripts/module/Volume'
+import AudioPlayerModule from '../scripts/module/AudioPlayerModule'
+import InputDeviceModule from '../scripts/module/InputDeviceModule'
+import MonitorModule from '../scripts/module/MonitorModule'
+import OscillatorModule from '../scripts/module/OscillatorModule'
+import VolumeModule from '../scripts/module/VolumeModule'
 
 export const useModuleStore = defineStore('module', () => {
 	const cableStore = useCableStore()
@@ -34,11 +34,11 @@ export const useModuleStore = defineStore('module', () => {
 
 	// Push modules by forEach to avoid type annotation problem
 	[
-		new AudioPlayer(),
-		new InputDevice(),
-		new Monitor(),
-		new Oscillator(),
-		new Volume()
+		new AudioPlayerModule(),
+		new InputDeviceModule(),
+		new MonitorModule(),
+		new OscillatorModule(),
+		new VolumeModule()
 	].forEach(module => {
 		modules.value.push(module)
 	})
