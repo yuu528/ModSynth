@@ -7,6 +7,7 @@
       draggable="true"
       :data-id="props.dataKey"
       :data-type="props.dataType"
+      :data-index="props.dataIdx"
       :data-moduleIdx="props.dataModuleIdx"
       @dragstart="cableStore.dragStart"
       @dragover="cableStore.dragOver"
@@ -41,6 +42,7 @@ const props = defineProps([
   'name',
   'dataKey',
   'dataType',
+  'dataIdx',
   'dataModuleIdx'
 ])
 

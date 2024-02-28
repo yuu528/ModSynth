@@ -16,6 +16,7 @@ import InputDeviceModule from '../scripts/module/InputDeviceModule'
 import MonitorModule from '../scripts/module/MonitorModule'
 import OscillatorModule from '../scripts/module/OscillatorModule'
 import ParamEQModule from '../scripts/module/ParamEQModule'
+import SplitterModule from '../scripts/module/SplitterModule'
 import VolumeModule from '../scripts/module/VolumeModule'
 
 export const useModuleStore = defineStore('module', () => {
@@ -46,6 +47,7 @@ export const useModuleStore = defineStore('module', () => {
 		new MonitorModule(),
 		new OscillatorModule(),
 		new ParamEQModule(),
+		new SplitterModule(),
 		new VolumeModule()
 	].forEach(module => {
 		modules.value.push(module)

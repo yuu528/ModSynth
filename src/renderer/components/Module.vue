@@ -111,7 +111,7 @@
       </v-row>
       <v-row no-gutters>
         <v-col v-for="jack in props.jacks" :key="jack.name">
-          <Jack :name="jack.name" :dataKey="`m${props.idx}.${jack.name}`" :dataType="jack.type" :dataModuleIdx="props.idx" />
+          <Jack :name="jack.name" :dataKey="`m${props.idx}.${jack.name}`" :dataType="jack.type" :dataIdx="jack.index" :dataModuleIdx="props.idx" />
         </v-col>
       </v-row>
     </v-container>

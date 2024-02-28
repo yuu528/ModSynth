@@ -26,8 +26,8 @@ export const useCableStore = defineStore('cable', () => {
 	})
 
 	function add(p1: string, p2: string) {
-		const jack1 = getJack(p1)
-		const jack2 = getJack(p2)
+		let jack1 = getJack(p1)
+		let jack2 = getJack(p2)
 
 		if(jack1 === undefined || jack2 === undefined) return
 
@@ -43,6 +43,10 @@ export const useCableStore = defineStore('cable', () => {
 			const tmp = p1
 			p1 = p2
 			p2 = tmp
+
+			const tmpJack = jack1
+			jack1 = jack2
+			jack2 = tmpJack
 		} else {
 			return
 		}
@@ -60,8 +64,18 @@ export const useCableStore = defineStore('cable', () => {
 			const src = getAudioNode(p1)
 			const dest = getAudioNode(p2)
 
+			let jack1Idx = undefined
+			if(jack1.dataset.index !== undefined) {
+				jack1Idx = parseInt(jack1.dataset.index)
+			}
+
+			let jack2Idx = undefined
+			if(jack2.dataset.index !== undefined) {
+				jack2Idx = parseInt(jack2.dataset.index)
+			}
+
 			if(src !== null && dest !== null) {
-				src.connect(dest)
+				src.connect(dest, jack1Idx, jack2Idx)
 			}
 		}
 	}
@@ -78,8 +92,21 @@ export const useCableStore = defineStore('cable', () => {
 			const src = getAudioNode(cable.j1)
 			const dest = getAudioNode(cable.j2)
 
+			const jack1 = getJack(cable.j1)
+			const jack2 = getJack(cable.j2)
+
+			let jack1Idx = undefined
+			if(jack1 !== undefined && jack1.dataset.index !== undefined) {
+				jack1Idx = parseInt(jack1.dataset.index)
+			}
+
+			let jack2Idx = undefined
+			if(jack2 !== undefined && jack2.dataset.index !== undefined) {
+				jack2Idx = parseInt(jack2.dataset.index)
+			}
+
 			if(src !== null && dest !== null) {
-				src.disconnect(dest)
+				src.disconnect(dest, jack1Idx, jack2Idx)
 			}
 		}
 		updateCables()
