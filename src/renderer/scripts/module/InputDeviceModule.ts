@@ -71,7 +71,10 @@ export default class InputDeviceModule extends Module {
 					audio: {
 						deviceId: {
 							exact: deviceCtrl.value
-						}
+						},
+						autoGainControl: false,
+						echoCancellation: false,
+						noiseSuppression: false
 					}
 				})
 			)
