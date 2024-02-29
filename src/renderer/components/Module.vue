@@ -1,5 +1,5 @@
 <template>
-  <v-sheet class="rounded" border="md" style="max-width: 280px;">
+  <v-sheet class="rounded" border="md" style="max-width: 232px;">
     <v-container>
       <v-row>
         <v-col class="text-center">
