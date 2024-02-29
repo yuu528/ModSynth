@@ -22,6 +22,15 @@ export default class InputDeviceModule extends Module {
 				component: Component.Select,
 				items: [],
 				value: ''
+			},
+			{
+				id: 'volume',
+				name: 'Vol',
+				component: Component.Knob,
+				min: 0,
+				max: 2,
+				step: 1e-2,
+				value: 1
 			}
 		],
 		jacks: [
@@ -59,18 +68,16 @@ export default class InputDeviceModule extends Module {
 	onEnable(idx: number) {
 		this._onEnable(idx)
 
-		const deviceCtrl = this.getControl('device');
-
-		if(deviceCtrl === undefined) return
+		const ctrls = this.getControls();
 
 		(async () => {
-			if(typeof deviceCtrl.value !== 'string') return
+			if(typeof ctrls.device.value !== 'string') return
 
-			this.data.output = this.moduleStore.audioCtx.createMediaStreamSource(
+			this.data.input = this.moduleStore.audioCtx.createMediaStreamSource(
 				await navigator.mediaDevices.getUserMedia({
 					audio: {
 						deviceId: {
-							exact: deviceCtrl.value
+							exact: ctrls.device.value
 						},
 						autoGainControl: false,
 						echoCancellation: false,
@@ -78,17 +85,20 @@ export default class InputDeviceModule extends Module {
 					}
 				})
 			)
+
+			this.data.output = this.moduleStore.audioCtx.createGain()
+			this.data.input.connect(this.data.output)
 		})()
 	}
 
-	updateValue(idx: number, id: string, value: string) {
+	updateValue(idx: number, id: string, value: number | string) {
 		switch(id) {
 			case 'device':
 				(async () => {
 					const newStream = await navigator.mediaDevices.getUserMedia({
 						audio: {
 							deviceId: {
-								exact: value
+								exact: value as string
 							}
 						}
 					})
@@ -96,12 +106,21 @@ export default class InputDeviceModule extends Module {
 					const jackId = `m${idx}.Out`
 					const removed: Cable[] = this.cableStore.remove(jackId)
 
-					this.data.output = this.moduleStore.audioCtx.createMediaStreamSource(newStream)
+					if(this.data.input !== undefined) {
+						this.data.input.disconnect()
+					}
+					this.data.input = this.moduleStore.audioCtx.createMediaStreamSource(newStream)
+					this.data.input.connect(this.data.output as AudioNode)
 
 					for(const cable of removed) {
 						this.cableStore.add(cable.j1, cable.j2)
 					}
 				})()
+			break
+
+			case 'volume':
+				if(!(this.data.output instanceof GainNode)) return
+				this.data.output.gain.setValueAtTime(value as number, this.moduleStore.audioCtx.currentTime)
 			break
 		}
 

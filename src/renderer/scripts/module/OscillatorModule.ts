@@ -46,6 +46,15 @@ export default class OscillatorModule extends Module {
 				max: 16e3,
 				step: 1,
 				value: 1e3
+			},
+			{
+				id: 'volume',
+				name: 'Vol',
+				component: Component.Knob,
+				min: 0,
+				max: 2,
+				step: 1e-2,
+				value: 1
 			}
 		],
 		jacks: [
@@ -65,33 +74,35 @@ export default class OscillatorModule extends Module {
 	onEnable(idx: number) {
 		this._onEnable(idx)
 
-		const freqCtrl = this.getControl('frequency')
-		const typeCtrl = this.getControl('type')
+		const ctrls = this.getControls()
 
-		if(freqCtrl === undefined || typeCtrl === undefined) return
+		this.data.input = this.moduleStore.audioCtx.createOscillator()
+		this.data.output = this.moduleStore.audioCtx.createGain()
 
-		const freq = freqCtrl.value
-		const type = typeCtrl.value
+		if(!(this.data.input instanceof OscillatorNode) || !(this.data.output instanceof GainNode)) return
 
-		this.data.output = this.moduleStore.audioCtx.createOscillator()
+		this.data.input.type = ctrls.type.value
+		this.data.input.frequency.setValueAtTime(ctrls.frequency.value as number, this.moduleStore.audioCtx.currentTime)
+		this.data.output.gain.setValueAtTime(ctrls.volume.value as number, this.moduleStore.audioCtx.currentTime)
 
-		if(!(this.data.output instanceof OscillatorNode)) return
-
-		this.data.output.type = type
-		this.data.output.frequency.setValueAtTime(freq as number, this.moduleStore.audioCtx.currentTime)
-		this.data.output.start()
+		this.data.input.connect(this.data.output)
+		this.data.input.start()
 	}
 
 	updateValue(idx: number, id: string, value: number | string) {
-		if(!(this.data.output instanceof OscillatorNode)) return
+		if(!(this.data.input instanceof OscillatorNode) || !(this.data.output instanceof GainNode)) return
 
 		switch(id) {
 			case 'type':
-				this.data.output.type = value
+				this.data.input.type = value
 			break
 
 			case 'frequency':
-				this.data.output.frequency.setValueAtTime(value as number, this.moduleStore.audioCtx.currentTime)
+				this.data.input.frequency.setValueAtTime(value as number, this.moduleStore.audioCtx.currentTime)
+			break
+
+			case 'volume':
+				this.data.output.gain.setValueAtTime(value as number, this.moduleStore.audioCtx.currentTime)
 			break
 		}
 	}
