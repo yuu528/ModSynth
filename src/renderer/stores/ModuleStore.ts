@@ -12,6 +12,7 @@ import Module from '../scripts/module/Module'
 import AudioPlayerModule from '../scripts/module/AudioPlayerModule'
 import CompressorModule from '../scripts/module/CompressorModule'
 import DelayModule from '../scripts/module/DelayModule'
+import EchoModule from '../scripts/module/EchoModule'
 import InputDeviceModule from '../scripts/module/InputDeviceModule'
 import MergerModule from '../scripts/module/MergerModule'
 import MonitorModule from '../scripts/module/MonitorModule'
@@ -55,6 +56,7 @@ export const useModuleStore = defineStore('module', () => {
 		new VolumeModule(),
 		new StereoPannerModule(),
 		new DelayModule(),
+		new EchoModule(),
 		new ParamEQModule(),
 		new CompressorModule(),
 		new PannerModule(),

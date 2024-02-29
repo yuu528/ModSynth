@@ -20,4 +20,5 @@ export default interface ModuleData {
 
 	input?: AudioNode
 	output?: AudioNode
+	intNodes?: AudioNode[]
 }
