@@ -85,9 +85,10 @@
       >
         <path
           v-for="cable in cables"
-          :d="`M ${cable.p1.x} ${cable.p1.y} L ${cable.p2.x} ${cable.p2.y}`"
+          :d="calcPath(cable.p1.x, cable.p1.y, cable.p2.x, cable.p2.y)"
           stroke="black"
           stroke-width="2"
+          fill="transparent"
         />
       </svg>
     </v-main>
@@ -131,4 +132,26 @@ const enabledModulesOrder = computed(() => moduleStore.enabledModulesOrder)
 const enabledModules = computed(() => moduleStore.enabledModules)
 
 window.addEventListener('resize', cableStore.updateCables)
+
+function calcPath(x1: number, y1: number, x2: number, y2: number) {
+  const yg = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)) / 4
+  const xg = Math.abs(x2 - x1) / 6
+
+  let cx1
+  let cx2
+  let cy1 = y1 + yg
+  let cy2 = y2 + yg
+
+  if(x1 < x2) {
+    cx1 = x1 + xg
+    cx2 = x2 - xg
+  } else {
+    cx1 = x1 - xg
+    cx2 = x2 + xg
+  }
+
+  const d = `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2}, ${y2}`
+
+  return d
+}
 </script>

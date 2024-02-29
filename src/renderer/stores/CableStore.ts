@@ -209,7 +209,7 @@ export const useCableStore = defineStore('cable', () => {
 			const svgElm = document.getElementById('cable-svg')
 			if(svgElm === null) return
 
-			svgElm.setAttribute('height', `${maxY}px`)
+			svgElm.setAttribute('height', `min(${maxY + 100}px, 100vh)`)
 		}
 
 		cablesData.value = newData
