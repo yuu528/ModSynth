@@ -32,7 +32,7 @@ const props = defineProps([
 ])
 
 const value = computed(() =>
-	NumberUtil.map(model.value as number, props.min, props.max, 0, 100)
+	Math.max(0, NumberUtil.map(model.value as number, props.min, props.max, 0, 100))
 )
 
 const valueText = computed(() =>{
