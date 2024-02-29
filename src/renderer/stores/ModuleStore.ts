@@ -18,6 +18,7 @@ import OscillatorModule from '../scripts/module/OscillatorModule'
 import PannerModule from '../scripts/module/PannerModule'
 import ParamEQModule from '../scripts/module/ParamEQModule'
 import SplitterModule from '../scripts/module/SplitterModule'
+import StereoPannerModule from '../scripts/module/StereoPannerModule'
 import VolumeModule from '../scripts/module/VolumeModule'
 
 export const useModuleStore = defineStore('module', () => {
@@ -50,6 +51,7 @@ export const useModuleStore = defineStore('module', () => {
 		new PannerModule(),
 		new ParamEQModule(),
 		new SplitterModule(),
+		new StereoPannerModule(),
 		new VolumeModule()
 	].forEach(module => {
 		modules.value.push(module)
