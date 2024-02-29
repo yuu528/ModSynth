@@ -2,7 +2,7 @@ import Unit from '../enum/Unit'
 
 export class NumberUtil {
 	public static getNumberLength(value: number): number {
-		return Math.floor(value).toString().length
+		return Math.floor(Math.abs(value)).toString().length
 	}
 
 	public static toSI(value: number, disabledUnits?: Unit[]): string {
@@ -74,7 +74,7 @@ export class NumberUtil {
 	public static getNiceRoundNumber(value: number, count?: number) {
 		let offset
 		if(count === undefined) {
-			offset = Math.pow(10, Math.floor(value).toString().length - 1)
+			offset = Math.pow(10, NumberUtil.getNumberLength(value) - 1)
 		} else {
 			offset = Math.pow(10, count - 1)
 		}
@@ -84,5 +84,30 @@ export class NumberUtil {
 
 	public static map(value: number, min: number, max: number, newMin: number, newMax: number): number {
 		return (value - min) * (newMax - newMin) / (max - min) + newMin
+	}
+
+	public static degToRad(deg: number): number {
+		return deg * Math.PI / 180
+	}
+
+	public static degToVector(deg: number): { x: number, y: number } {
+		return {
+			x: Math.cos(NumberUtil.degToRad(deg)),
+			y: Math.sin(NumberUtil.degToRad(deg))
+		}
+	}
+
+	public static degToVectorY(deg: number): number {
+		return Math.sin(NumberUtil.degToRad(deg))
+	}
+
+	public static degToVector3d(hDeg: number, vDeg: number): { x: number, y: number, z: number } {
+		const vector2d = NumberUtil.degToVector(hDeg)
+
+		return {
+			x: vector2d.x,
+			y: this.degToVectorY(vDeg),
+			z: vector2d.y
+		}
 	}
 }
