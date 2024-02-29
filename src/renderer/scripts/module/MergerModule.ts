@@ -24,7 +24,7 @@ export default class MergerModule extends Module {
 				index: 1
 			},
 			{
-				name: 'In',
+				name: 'Out',
 				type: JackType.AUDIO_OUTPUT
 			}
 		]
