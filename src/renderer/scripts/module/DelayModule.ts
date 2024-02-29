@@ -64,7 +64,6 @@ export default class DelayModule extends Module {
 
 		switch(id) {
 			case 'time':
-				console.log(value)
 				this.data.output.delayTime.setValueAtTime(value as number, this.moduleStore.audioCtx.currentTime)
 			break
 		}

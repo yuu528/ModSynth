@@ -259,8 +259,6 @@ export default class PannerModule extends Module {
 			vec.z,
 			this.moduleStore.audioCtx.currentTime
 		)
-
-		console.log(vec)
 	}
 
 	private draw() {
