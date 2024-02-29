@@ -19,7 +19,7 @@ export default interface Control {
 	color?: string
 	bgColor?: string
 
-	valueMap?: (value: number | string) => number | string
+	valueLabels?: string[]
 	valueUnit?: string
 
 	elmId?: string

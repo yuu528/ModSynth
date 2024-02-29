@@ -34,15 +34,15 @@ const props = defineProps([
 	'label',
 	'si',
 	'disabled',
-	'valueMap',
+	'valueLabels',
 	'valueUnit'
 ])
 
 const value = computed(() => {
 	let value: number | string = model.value
 
-	if(props.valueMap !== undefined) {
-		value = props.valueMap(model.value)
+	if(props.valueLabels !== undefined) {
+		return props.valueLabels[model.value]
 	}
 
 	if(props.si && typeof value === 'number') {
