@@ -47,6 +47,7 @@
         class="flex-grow-1 h-100 overflow-y-auto d-flex flex-wrap"
         @dragover="moduleStore.dragOver"
         @drop="moduleStore.drop"
+        @scroll="cableStore.updateCables"
       >
         <template v-for="idx in enabledModulesOrder">
           <Module
