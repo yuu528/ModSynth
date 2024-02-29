@@ -13,6 +13,7 @@ import AudioPlayerModule from '../scripts/module/AudioPlayerModule'
 import CompressorModule from '../scripts/module/CompressorModule'
 import DelayModule from '../scripts/module/DelayModule'
 import InputDeviceModule from '../scripts/module/InputDeviceModule'
+import MergerModule from '../scripts/module/MergerModule'
 import MonitorModule from '../scripts/module/MonitorModule'
 import OscillatorModule from '../scripts/module/OscillatorModule'
 import PannerModule from '../scripts/module/PannerModule'
@@ -42,17 +43,24 @@ export const useModuleStore = defineStore('module', () => {
 
 	// Push modules by forEach to avoid type annotation problem
 	[
+		// Source
 		new AudioPlayerModule(),
 		new InputDeviceModule(),
-		new CompressorModule(),
-		new DelayModule(),
-		new MonitorModule(),
 		new OscillatorModule(),
-		new PannerModule(),
-		new ParamEQModule(),
+
+		// Filter
+		new MergerModule(),
 		new SplitterModule(),
+
+		new VolumeModule(),
 		new StereoPannerModule(),
-		new VolumeModule()
+		new DelayModule(),
+		new ParamEQModule(),
+		new CompressorModule(),
+		new PannerModule(),
+
+		// Visual
+		new MonitorModule(),
 	].forEach(module => {
 		modules.value.push(module)
 	})
