@@ -81,7 +81,8 @@ export default class EchoModule extends Module {
 			this.moduleStore.audioCtx.createGain(), // feedback(sustain)
 			this.moduleStore.audioCtx.createGain(), // dry volume
 			this.moduleStore.audioCtx.createGain(), // wet volume
-			this.moduleStore.audioCtx.createDelay() // dry delay
+			this.moduleStore.audioCtx.createDelay(), // dry delay
+			this.moduleStore.audioCtx.createGain() // mixer before delay
 		]
 		this.data.output = this.moduleStore.audioCtx.createGain()
 
@@ -92,6 +93,7 @@ export default class EchoModule extends Module {
 			|| !(this.data.intNodes[2] instanceof GainNode)
 			|| !(this.data.intNodes[3] instanceof GainNode)
 			|| !(this.data.intNodes[4] instanceof DelayNode)
+			|| !(this.data.intNodes[5] instanceof GainNode)
 			|| !(this.data.output instanceof GainNode)
 		) return
 
@@ -101,25 +103,31 @@ export default class EchoModule extends Module {
 		this.data.intNodes[2].gain.setValueAtTime(1 - (ctrls.mix.value as number), this.moduleStore.audioCtx.currentTime)
 		this.data.intNodes[3].gain.setValueAtTime(ctrls.mix.value as number, this.moduleStore.audioCtx.currentTime)
 		this.data.intNodes[4].delayTime.setValueAtTime(ctrls.time.value as number, this.moduleStore.audioCtx.currentTime)
+		this.data.intNodes[5].gain.setValueAtTime(1, this.moduleStore.audioCtx.currentTime)
 		this.data.output.gain.setValueAtTime(ctrls.gain.value as number, this.moduleStore.audioCtx.currentTime)
 
-		// input -> delay
-		this.data.input.connect(this.data.intNodes[0])
+		// Diagram:
+		//               ----------> Output volume
+		//              |                 ^
+		//       -> Dry volume(2)     Wet volume(3)
+		//      |               ,---------^
+		// Input volume ---> Mixer(5) -> Delay(0)
+		//                     ^            v
+		//                     '-- Feedback volume(1)
 
-		// delay -> feedback vol -> delay
-		this.data.intNodes[0].connect(this.data.intNodes[1])
-		this.data.intNodes[1].connect(this.data.intNodes[0])
+		// input -> mixer -> delay -> feedback vol -> mixer -> wet vol -> output
+		this.data.input
+			.connect(this.data.intNodes[5]) // mixer
+			.connect(this.data.intNodes[0]) // delay
+			.connect(this.data.intNodes[1]) // feedback vol
+			.connect(this.data.intNodes[5]) // mixer
+			.connect(this.data.intNodes[3]) // wet vol
+			.connect(this.data.output)
 
-		// delay -> wet vol
-		this.data.intNodes[0].connect(this.data.intNodes[3])
-
-		// input -> dry vol -> dry delay
-		this.data.input.connect(this.data.intNodes[2])
-		this.data.intNodes[2].connect(this.data.intNodes[4])
-
-		// dry delay, wet -> output
-		this.data.intNodes[3].connect(this.data.output)
-		this.data.intNodes[4].connect(this.data.output)
+		// input -> dry vol -> output
+		this.data.input
+			.connect(this.data.intNodes[2])
+			.connect(this.data.output)
 	}
 
 	updateValue(idx: number, id: string, value: number | string) {
