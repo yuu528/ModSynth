@@ -95,8 +95,12 @@ export default class AudioPlayerModule extends Module {
 
 		const audioElm = document.getElementById(audioCtrl.elmId) as HTMLAudioElement
 
+		this.data.output = this.moduleStore.audioCtx.createMediaElementSource(audioElm)
 
-		this.data.output = this.moduleStore.audioCtx.createMediaElementSource(audioElm);
+		// to avoid stopping the audio when MediaElementAudioSourceNode is disconnected
+		this.data.intNodes = [
+			this.data.output.connect(this.moduleStore.audioCtx.createAnalyser())
+		];
 
 		[
 			'canplay',
