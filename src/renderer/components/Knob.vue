@@ -144,6 +144,7 @@ function keypress(event: KeyboardEvent) {
 	height: 30px;
 	background-color: black;
 	border-radius: 50%;
+	margin: 0 3px;
 }
 
 .mark {
@@ -165,7 +166,7 @@ function keypress(event: KeyboardEvent) {
 }
 
 .label {
-	width: 30px;
+	width: 36px;
 	overflow: visible;
 }
 
