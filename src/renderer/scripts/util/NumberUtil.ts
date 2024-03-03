@@ -97,17 +97,14 @@ export class NumberUtil {
 		}
 	}
 
-	public static degToVectorY(deg: number): number {
-		return Math.sin(NumberUtil.degToRad(deg))
-	}
-
 	public static degToVector3d(hDeg: number, vDeg: number): { x: number, y: number, z: number } {
 		const vector2d = NumberUtil.degToVector(hDeg)
+		const vRad = NumberUtil.degToRad(vDeg)
 
 		return {
-			x: vector2d.x,
-			y: this.degToVectorY(vDeg),
-			z: vector2d.y
+			x: vector2d.x * Math.cos(vRad),
+			y: Math.sin(vRad),
+			z: vector2d.y * Math.cos(vRad)
 		}
 	}
 }

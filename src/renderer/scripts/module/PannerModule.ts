@@ -1,4 +1,14 @@
 import { toRaw } from 'vue'
+import {
+	CylinderGeometry,
+	GridHelper,
+	Mesh,
+	MeshBasicMaterial,
+	OrthographicCamera,
+	Scene,
+	Vector3,
+	WebGLRenderer
+} from 'three'
 
 import ModuleCategory from '../enum/ModuleCategory'
 import JackType from '../enum/JackType'
@@ -13,20 +23,20 @@ import { NumberUtil } from '../util/NumberUtil'
 export default class PannerModule extends Module {
 	data: ModuleData = {
 		id: 'panner',
-		name: 'Panner(Beta)',
+		name: 'Panner',
 		category: ModuleCategory.FILTER,
 		monitors: [
-			{
-				id: 'hMonitor',
-				name: 'Plan View',
-				width: 200,
-				height: 50
-			},
 			{
 				id: 'vMonitor',
 				name: 'Side View',
 				width: 200,
-				height: 100
+				height: 200
+			},
+			{
+				id: 'hMonitor',
+				name: 'Plan View',
+				width: 200,
+				height: 200
 			}
 		],
 		controls: [
@@ -245,7 +255,8 @@ export default class PannerModule extends Module {
 	private updateOrientation(hDeg: number, vDeg: number) {
 		if(this.data.output === undefined || !(this.data.output instanceof PannerNode)) return
 
-		const vec = NumberUtil.degToVector3d(hDeg - 90, vDeg)
+		const vec = NumberUtil.degToVector3d(hDeg + 90, vDeg)
+
 
 		this.data.output.orientationX.setValueAtTime(
 			vec.x,
@@ -271,308 +282,199 @@ export default class PannerModule extends Module {
 
 		if(hCanvas === null || vCanvas === null) return
 
-		const hCtx = hCanvas.getContext('2d')
-		const vCtx = vCanvas.getContext('2d')
+		const listener = this.moduleStore.audioCtx.listener
 
-		if(hCtx === null || vCtx === null) return
-
-		// draw plan view
-		const drawPlanView = () => {
-			hCtx.clearRect(0, 0, hCanvas.width, hCanvas.height)
-
-			// horizontal: z, vertical: x
-			const sourcePos = {
-				x: ctrls.x.value as number,
-				z: ctrls.z.value as number
+		const hMonitorSize = {
+			w: hCanvas.width,
+			h: hCanvas.height
+		}
+		const vMonitorSize = {
+			w: vCanvas.width,
+			h: vCanvas.height
+		}
+		const padding = {
+			x: 5,
+			y: 5,
+			z: 5
+		}
+		const range = {
+			x: {
+				min: Math.min(listener.positionX.value, ctrls.x.value as number) - padding.x,
+				max: Math.max(listener.positionX.value, ctrls.x.value as number) + padding.x
+			},
+			y: {
+				min: Math.min(listener.positionY.value, ctrls.y.value as number) - padding.y,
+				max: Math.max(listener.positionY.value, ctrls.y.value as number) + padding.y
+			},
+			z: {
+				min: Math.min(listener.positionZ.value, ctrls.z.value as number) - padding.z,
+				max: Math.max(listener.positionZ.value, ctrls.z.value as number) + padding.z
 			}
-
-			// range
-			const padding = {
-				z: 5,
-				x: 5
-			}
-			const range = {
-				z: {
-					min: Math.min(0, sourcePos.z) - padding.z,
-					max: Math.max(0, sourcePos.z) + padding.z
-				},
-				x: {
-					min: Math.min(0, sourcePos.x) - padding.x,
-					max: Math.max(0, sourcePos.x) + padding.x
-				}
-			}
-			const toCanvasX = (x: number) => NumberUtil.map(x, range.z.min, range.z.max, 0, hCanvas.width)
-			const toCanvasY = (y: number) => NumberUtil.map(y, range.x.min, range.x.max, hCanvas.height, 0)
-
-			// cone
-			const innerAngle = ctrls.innerAngle.value as number
-			const outerAngle = ctrls.outerAngle.value as number
-			const hRotation = ctrls.hDeg.value as number + 180
-
-			// outer
-			hCtx.fillStyle = 'rgb(0 127 255 / .5)'
-
-			hCtx.beginPath()
-			hCtx.moveTo(
-				toCanvasX(sourcePos.z),
-				toCanvasY(sourcePos.x)
-			)
-			hCtx.arc(
-				toCanvasX(sourcePos.z),
-				toCanvasY(sourcePos.x),
-				hCanvas.width,
-				NumberUtil.degToRad(hRotation - outerAngle / 2),
-				NumberUtil.degToRad(hRotation + outerAngle / 2)
-			)
-			hCtx.lineTo(
-				toCanvasX(sourcePos.z),
-				toCanvasY(sourcePos.x)
-			)
-			hCtx.fill()
-
-			// inner
-			hCtx.fillStyle = 'rgb(255 255 255 / .3)'
-
-			hCtx.beginPath()
-			hCtx.moveTo(
-				toCanvasX(sourcePos.z),
-				toCanvasY(sourcePos.x)
-			)
-			hCtx.arc(
-				toCanvasX(sourcePos.z),
-				toCanvasY(sourcePos.x),
-				hCanvas.width,
-				NumberUtil.degToRad(hRotation - innerAngle / 2),
-				NumberUtil.degToRad(hRotation + innerAngle / 2)
-			)
-			hCtx.lineTo(
-				toCanvasX(sourcePos.z),
-				toCanvasY(sourcePos.x)
-			)
-			hCtx.fill()
-
-			// ruler
-			const rulerRange = {
-				h: {
-					min: Math.min(-10, NumberUtil.getNiceRoundNumber(Math.min(0, sourcePos.z))),
-					max: Math.max(10, NumberUtil.getNiceRoundNumber(Math.max(0, sourcePos.z as number)))
-				},
-				v: {
-					min: Math.min(-10, NumberUtil.getNiceRoundNumber(Math.min(0, sourcePos.x))),
-					max: Math.max(10, NumberUtil.getNiceRoundNumber(Math.max(0, sourcePos.x)))
-				}
-			}
-			const rulerCount = {
-				h: 5,
-				v: 5
-			}
-			const rulerStep = {
-				h: NumberUtil.getNiceRoundNumber((rulerRange.h.max - rulerRange.h.min) / rulerCount.h),
-				v: NumberUtil.getNiceRoundNumber((rulerRange.v.max - rulerRange.v.min) / rulerCount.v)
-			}
-			const rulers = {
-				h: [] as number[],
-				v: [] as number[]
-			}
-
-			for(let i = rulerRange.h.min; i <= range.z.max; i += rulerStep.h) {
-				rulers.h.push(i)
-			}
-
-			for(let i = rulerRange.v.min; i <= rulerRange.v.max; i += rulerStep.v) {
-				rulers.v.push(i)
-			}
-
-			if(!rulers.h.includes(0)) rulers.h.push(0)
-			if(!rulers.v.includes(0)) rulers.v.push(0)
-
-			hCtx.strokeStyle = 'gray'
-			hCtx.fillStyle = 'white'
-			hCtx.beginPath()
-			for(const ruler of rulers.h) {
-				const x = toCanvasX(ruler)
-
-				hCtx.moveTo(x, 0)
-				hCtx.lineTo(x, hCanvas.height)
-				hCtx.fillText(ruler.toString(), x, hCanvas.height - 5)
-			}
-			for(const ruler of rulers.v) {
-				const y = toCanvasY(ruler)
-
-				hCtx.moveTo(0, y)
-				hCtx.lineTo(hCanvas.width, y)
-				hCtx.fillText(ruler.toString(), 20, y)
-			}
-			hCtx.stroke()
-
-			// listener position
-			const listenerPos = {
-				x: 0,
-				y: 0
-			}
-			hCtx.fillStyle = 'red'
-
-			hCtx.beginPath()
-			hCtx.arc(toCanvasX(listenerPos.x), toCanvasY(listenerPos.y), 5, 0, 2 * Math.PI)
-			hCtx.fill()
-
-			// source position
-			hCtx.fillStyle = 'green'
-
-			hCtx.beginPath()
-			hCtx.arc(toCanvasX(sourcePos.z), toCanvasY(sourcePos.x), 5, 0, 2 * Math.PI)
-			hCtx.fill()
+		}
+		const size = {
+			x: range.x.max - range.x.min,
+			y: range.y.max - range.y.min,
+			z: range.z.max - range.z.min,
+		}
+		const mid = {
+			x: (range.x.min + range.x.max) / 2,
+			y: (range.y.min + range.y.max) / 2,
+			z: (range.z.min + range.z.max) / 2
 		}
 
-		// draw side view
-		const drawSideView = () => {
-			vCtx.clearRect(0, 0, vCanvas.width, vCanvas.height)
+		const hRenderer = new WebGLRenderer({ canvas: hCanvas })
+		const vRenderer = new WebGLRenderer({ canvas: vCanvas })
 
-			// horizontal: z, vertical: y
-			const sourcePos = {
-				z: ctrls.z.value as number,
-				y: ctrls.y.value as number
-			}
+		hRenderer.setSize(hMonitorSize.w, hMonitorSize.h)
+		vRenderer.setSize(vMonitorSize.w, vMonitorSize.h)
 
-			// range
-			const padding = {
-				z: 5,
-				y: 5
-			}
-			const range = {
-				z: {
-					min: Math.min(0, sourcePos.z) - padding.z,
-					max: Math.max(0, sourcePos.z) + padding.z
-				},
-				y: {
-					min: Math.min(0, sourcePos.y) - padding.y,
-					max: Math.max(0, sourcePos.y) + padding.y
-				}
-			}
-			const toCanvasX = (x: number) => NumberUtil.map(x, range.z.min, range.z.max, 0, vCanvas.width)
-			const toCanvasY = (y: number) => NumberUtil.map(y, range.y.min, range.y.max, vCanvas.height, 0)
+		const scene = new Scene()
 
-			// cone
-			const innerAngle = ctrls.innerAngle.value as number
-			const outerAngle = ctrls.outerAngle.value as number
-			const vRotation = ctrls.vDeg.value as number + 180
+		const listenerGeom = new CylinderGeometry(0.5, 0, 1)
+		const listenerMat = new MeshBasicMaterial({ color: 0xffff00 })
+		const listenerMesh = new Mesh(listenerGeom, listenerMat)
+		listenerMesh.position.set(
+			listener.positionX.value,
+			listener.positionY.value,
+			listener.positionZ.value
+		)
+		listenerMesh.setRotationFromAxisAngle(
+			new Vector3(0, 1, 0).applyAxisAngle(
+				new Vector3(
+					listener.forwardX.value,
+					listener.forwardY.value,
+					listener.forwardZ.value
+				).normalize(), Math.PI / 2
+			), Math.PI / 2
+		)
+		scene.add(listenerMesh)
 
-			// outer
-			vCtx.fillStyle = 'rgb(0 127 255 / .5)'
+		const sourceGeom = new CylinderGeometry(0, 0.5, 1)
+		const sourceMat = new MeshBasicMaterial({ color: 0xff0000 })
+		const sourceMesh = new Mesh(sourceGeom, sourceMat)
+		sourceMesh.position.set(
+			ctrls.x.value as number,
+			ctrls.y.value as number,
+			ctrls.z.value as number
+		)
+		const vec = NumberUtil.degToVector3d(ctrls.hDeg.value as number + 90, ctrls.vDeg.value as number)
+		sourceGeom.rotateX(Math.PI / 2)
+		sourceMesh.lookAt(
+			ctrls.x.value as number + vec.x,
+			ctrls.y.value as number + vec.y,
+			ctrls.z.value as number + vec.z
+		)
+		scene.add(sourceMesh)
 
-			vCtx.beginPath()
-			vCtx.moveTo(
-				toCanvasX(sourcePos.z),
-				toCanvasY(sourcePos.y)
-			)
-			vCtx.arc(
-				toCanvasX(sourcePos.z),
-				toCanvasY(sourcePos.y),
-				vCanvas.width,
-				NumberUtil.degToRad(vRotation - outerAngle / 2),
-				NumberUtil.degToRad(vRotation + outerAngle / 2)
-			)
-			vCtx.lineTo(
-				toCanvasX(sourcePos.z),
-				toCanvasY(sourcePos.y)
-			)
-			vCtx.fill()
+		const cameraWidth = Math.max(size.x, size.y, size.z)
+		const cameraHeight = cameraWidth * (hMonitorSize.h / hMonitorSize.w)
 
-			// inner
-			vCtx.fillStyle = 'rgb(255 255 255 / .3)'
+		const coneHeight = Math.max(cameraWidth * 2, cameraHeight * 2)
+		const innerConeGeom = new CylinderGeometry(
+			coneHeight * Math.tan(NumberUtil.degToRad(ctrls.innerAngle.value as number / 2)),
+			0,
+			coneHeight
+		)
+		const innerConeMat = new MeshBasicMaterial({ color: 0x009688, transparent: true, opacity: 0.5 })
+		const innerConeMesh = new Mesh(innerConeGeom, innerConeMat)
+		innerConeGeom.translate(0, coneHeight / 2, 0)
+		innerConeGeom.rotateX(Math.PI / 2)
+		innerConeMesh.position.set(
+			ctrls.x.value as number,
+			ctrls.y.value as number,
+			ctrls.z.value as number
+		)
+		innerConeMesh.lookAt(
+			ctrls.x.value as number + vec.x,
+			ctrls.y.value as number + vec.y,
+			ctrls.z.value as number + vec.z
+		)
+		scene.add(innerConeMesh)
 
-			vCtx.beginPath()
-			vCtx.moveTo(
-				toCanvasX(sourcePos.z),
-				toCanvasY(sourcePos.y)
-			)
-			vCtx.arc(
-				toCanvasX(sourcePos.z),
-				toCanvasY(sourcePos.y),
-				vCanvas.width,
-				NumberUtil.degToRad(vRotation - innerAngle / 2),
-				NumberUtil.degToRad(vRotation + innerAngle / 2)
-			)
-			vCtx.lineTo(
-				toCanvasX(sourcePos.z),
-				toCanvasY(sourcePos.y)
-			)
-			vCtx.fill()
+		const outerConeGeom = new CylinderGeometry(
+			(coneHeight - 1) * Math.tan(NumberUtil.degToRad(ctrls.outerAngle.value as number / 2)),
+			0,
+			coneHeight - 1
+		)
+		const outerConeMat = new MeshBasicMaterial({ color: 0x3f51b5, transparent: true, opacity: 0.5 })
+		const outerConeMesh = new Mesh(outerConeGeom, outerConeMat)
+		outerConeGeom.translate(0, coneHeight / 2, 0)
+		outerConeGeom.rotateX(Math.PI / 2)
+		outerConeMesh.position.set(
+			ctrls.x.value as number,
+			ctrls.y.value as number,
+			ctrls.z.value as number
+		)
+		outerConeMesh.lookAt(
+			ctrls.x.value as number + vec.x,
+			ctrls.y.value as number + vec.y,
+			ctrls.z.value as number + vec.z
+		)
+		scene.add(outerConeMesh)
 
-			// ruler
-			const rulerRange = {
-				h: {
-					min: Math.min(-10, NumberUtil.getNiceRoundNumber(Math.min(0, sourcePos.z))),
-					max: Math.max(10, NumberUtil.getNiceRoundNumber(Math.max(0, sourcePos.z as number)))
-				},
-				v: {
-					min: Math.min(-10, NumberUtil.getNiceRoundNumber(Math.min(0, sourcePos.y))),
-					max: Math.max(10, NumberUtil.getNiceRoundNumber(Math.max(0, sourcePos.y)))
-				}
-			}
-			const rulerCount = {
-				h: 5,
-				v: 5
-			}
-			const rulerStep = {
-				h: NumberUtil.getNiceRoundNumber((rulerRange.h.max - rulerRange.h.min) / rulerCount.h),
-				v: NumberUtil.getNiceRoundNumber((rulerRange.v.max - rulerRange.v.min) / rulerCount.v)
-			}
-			const rulers = {
-				h: [] as number[],
-				v: [] as number[]
-			}
+		// x, z -> x, y
+		const hCameraDist = range.y.max + coneHeight
+		const hCamera = new OrthographicCamera(
+			cameraWidth / -2,
+			cameraWidth / 2,
+			cameraHeight / 2,
+			cameraHeight / -2,
+			0,
+			size.y + hCameraDist
+		)
+		hCamera.position.set(
+			mid.x,
+			range.y.max + hCameraDist,
+			mid.z
+		)
+		hCamera.lookAt(
+			mid.x,
+			range.y.min,
+			mid.z
+		)
+		scene.add(hCamera)
 
-			for(let i = rulerRange.h.min; i <= range.z.max; i += rulerStep.h) {
-				rulers.h.push(i)
-			}
+		// x, y -> x, y
+		const vCameraDist = range.z.max + coneHeight
+		const vCamera = new OrthographicCamera(
+			cameraWidth / -2,
+			cameraWidth / 2,
+			cameraHeight / 2,
+			cameraHeight / -2,
+			0,
+			cameraHeight + vCameraDist
+		)
+		vCamera.position.set(
+			mid.x,
+			mid.y,
+			range.z.max + vCameraDist
+		)
+		vCamera.lookAt(
+			mid.x,
+			mid.y,
+			range.z.min
+		)
+		scene.add(vCamera)
 
-			for(let i = rulerRange.v.min; i <= rulerRange.v.max; i += rulerStep.v) {
-				rulers.v.push(i)
-			}
+		const minGridSize = Math.min(cameraWidth, cameraHeight) * 2
+		const gridCount = 20
+		const gridSize = Math.ceil(
+			Math.ceil(minGridSize / 10) * 10 / gridCount
+			) * gridCount
 
-			if(!rulers.h.includes(0)) rulers.h.push(0)
-			if(!rulers.v.includes(0)) rulers.v.push(0)
+		const hGrid = new GridHelper(gridSize, gridCount)
+		scene.add(hGrid)
 
-			vCtx.strokeStyle = 'gray'
-			vCtx.fillStyle = 'white'
-			vCtx.beginPath()
-			for(const ruler of rulers.h) {
-				const x = toCanvasX(ruler)
+		const vGrid = new GridHelper(gridSize, gridCount)
+		vGrid.rotation.x = Math.PI / 2
+		vGrid.position.y = 0
+		vGrid.position.z = mid.z - cameraHeight / 2
+		scene.add(vGrid)
 
-				vCtx.moveTo(x, 0)
-				vCtx.lineTo(x, vCanvas.height)
-				vCtx.fillText(ruler.toString(), x, vCanvas.height - 5)
-			}
-			for(const ruler of rulers.v) {
-				const y = toCanvasY(ruler)
+		hCamera.updateProjectionMatrix()
+		vCamera.updateProjectionMatrix()
 
-				vCtx.moveTo(0, y)
-				vCtx.lineTo(vCanvas.width, y)
-				vCtx.fillText(ruler.toString(), 20, y)
-			}
-			vCtx.stroke()
-
-			// listener position
-			const listenerPos = {
-				x: 0,
-				y: 0
-			}
-			vCtx.fillStyle = 'red'
-
-			vCtx.beginPath()
-			vCtx.arc(toCanvasX(listenerPos.x), toCanvasY(listenerPos.y), 5, 0, 2 * Math.PI)
-			vCtx.fill()
-
-			// source position
-			vCtx.fillStyle = 'green'
-
-			vCtx.beginPath()
-			vCtx.arc(toCanvasX(sourcePos.z), toCanvasY(sourcePos.y), 5, 0, 2 * Math.PI)
-			vCtx.fill()
-		}
-
-		drawPlanView()
-		drawSideView()
+		hRenderer.render(scene, hCamera)
+		vRenderer.render(scene, vCamera)
 	}
 }
