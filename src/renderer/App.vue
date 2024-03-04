@@ -112,26 +112,30 @@ const cableStore = useCableStore()
 const moduleStore = useModuleStore()
 
 const cables = computed(() => cableStore.cablesData)
-
-const moduleTab = ref(null)
-
-let modulesByCategory: { [category: string]: ModuleClass[] } = {}
-
-for(const module of moduleStore.modules) {
-  if(module.data === undefined) continue
-
-  if(!(module.data.category in modulesByCategory)) {
-    modulesByCategory[module.data.category] = []
-  }
-
-  modulesByCategory[module.data.category].push(module as ModuleClass)
-}
-
+const moduleTab = ref<string | null>(null)
+const modulesByCategory = ref<{[category: string]: ModuleClass[]}>({})
 const enabledModulesOrder = computed(() => moduleStore.enabledModulesOrder)
-
 const enabledModules = computed(() => moduleStore.enabledModules)
 
-window.addEventListener('resize', cableStore.updateCables)
+init()
+
+async function init() {
+  await moduleStore.init()
+
+  for(const module of moduleStore.modules) {
+    if(module.data === undefined) continue
+
+    if(!(module.data.category in modulesByCategory.value)) {
+      modulesByCategory.value[module.data.category] = []
+    }
+
+    modulesByCategory.value[module.data.category].push(module as ModuleClass)
+  }
+
+  moduleTab.value = Object.keys(modulesByCategory.value)[0]
+
+  window.addEventListener('resize', cableStore.updateCables)
+}
 
 function calcPath(x1: number, y1: number, x2: number, y2: number) {
   const yg = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)) / 4

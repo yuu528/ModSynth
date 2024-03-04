@@ -35,37 +35,36 @@ export const useModuleStore = defineStore('module', () => {
 	})
 
 	const modules: Ref<Module[]> = ref([])
-
 	const enabledModules = ref<Module[]>([])
-
 	const enabledModulesOrder = ref<number[]>([])
-
 	const audioCtx = ref(new window.AudioContext());
 
-	// Push modules by forEach to avoid type annotation problem
-	[
-		// Source
-		new AudioPlayerModule(),
-		new InputDeviceModule(),
-		new OscillatorModule(),
+	async function init() {
+		for(const module of [
+			// Source
+			new AudioPlayerModule(),
+			new InputDeviceModule(),
+			new OscillatorModule(),
 
-		// Filter
-		new MergerModule(),
-		new SplitterModule(),
+			// Filter
+			new MergerModule(),
+			new SplitterModule(),
 
-		new VolumeModule(),
-		new StereoPannerModule(),
-		new DelayModule(),
-		new EchoModule(),
-		new ParamEQModule(),
-		new CompressorModule(),
-		new PannerModule(),
+			new VolumeModule(),
+			new StereoPannerModule(),
+			new DelayModule(),
+			new EchoModule(),
+			new ParamEQModule(),
+			new CompressorModule(),
+			new PannerModule(),
 
-		// Visual
-		new MonitorModule(),
-	].forEach(module => {
-		modules.value.push(module)
-	})
+			// Visual
+			new MonitorModule(),
+		]) {
+			await module.init()
+			modules.value.push(module)
+		}
+	}
 
 	function add(module: Module): number {
 		const idx = enabledModules.value.push(module) - 1
@@ -204,7 +203,7 @@ export const useModuleStore = defineStore('module', () => {
 
 						module.data.id = id
 
-						reorder(add(module), targetModuleIdx)
+					reorder(add(module), targetModuleIdx)
 					}
 				break
 
@@ -292,7 +291,7 @@ export const useModuleStore = defineStore('module', () => {
 
 	return {
 		modules, enabledModules, enabledModulesOrder, audioCtx,
-		add, remove, updateValue,
+		init, add, remove, updateValue,
 		baseDragStart, baseDragOver, baseDrop,
 		enabledDragOver, enabledDrop,
 		dragStart, dragOver, dragEnd, drop

@@ -43,20 +43,20 @@ export default class InputDeviceModule extends Module {
 
 	constructor() {
 		super();
+	}
 
-		(async (data) => {
-			if(data.controls === undefined) return
+	async init() {
+		if(this.data.controls === undefined) return
 
-			const devices = (await navigator.mediaDevices.enumerateDevices()).filter(device =>
-				device.kind === 'audioinput'
-			).map(device => ({
-				label: device.label,
-				value: device.deviceId
-			}))
+		const devices = (await navigator.mediaDevices.enumerateDevices()).filter(device =>
+			device.kind === 'audioinput'
+		).map(device => ({
+			label: device.label,
+			value: device.deviceId
+		}))
 
-			data.controls[0].items = devices
-			data.controls[0].value = devices[0].value
-		})(this.data)
+		this.data.controls[0].items = devices
+		this.data.controls[0].value = devices[0].value
 	}
 
 	clone() {

@@ -55,6 +55,7 @@ export default class Module {
 		this.data.idx = idx
 	}
 
+	async init() {}
 	clone(): Module { return new Module() }
 	updateValue(idx: number, id: string, value: number | string | Event | File) {}
 }
