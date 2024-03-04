@@ -19,6 +19,19 @@ function createWindow () {
   else {
     mainWindow.loadFile(join(app.getAppPath(), 'renderer', 'index.html'));
   }
+
+  mainWindow.webContents.session.setPermissionRequestHandler((webContents, permission, callback) => {
+    const accepts = [
+      'midi',
+      'midiSysex',
+      'media'
+    ]
+    if(accepts.includes(permission)) {
+      callback(true);
+    } else {
+      callback(false);
+    }
+  });
 }
 
 app.whenReady().then(() => {
@@ -32,6 +45,7 @@ app.whenReady().then(() => {
       }
     })
   })
+
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the

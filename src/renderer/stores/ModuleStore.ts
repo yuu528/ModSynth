@@ -14,6 +14,7 @@ import CompressorModule from '../scripts/module/CompressorModule'
 import DelayModule from '../scripts/module/DelayModule'
 import EchoModule from '../scripts/module/EchoModule'
 import InputDeviceModule from '../scripts/module/InputDeviceModule'
+import MIDIInputModule from '../scripts/module/MIDIInputModule'
 import MergerModule from '../scripts/module/MergerModule'
 import MonitorModule from '../scripts/module/MonitorModule'
 import OscillatorModule from '../scripts/module/OscillatorModule'
@@ -22,6 +23,8 @@ import ParamEQModule from '../scripts/module/ParamEQModule'
 import SplitterModule from '../scripts/module/SplitterModule'
 import StereoPannerModule from '../scripts/module/StereoPannerModule'
 import VolumeModule from '../scripts/module/VolumeModule'
+
+import MIDIInputProcessorURL from '../scripts/processor/MIDIInputProcessor.ts?url'
 
 export const useModuleStore = defineStore('module', () => {
 	const cableStore = useCableStore()
@@ -37,13 +40,20 @@ export const useModuleStore = defineStore('module', () => {
 	const modules: Ref<Module[]> = ref([])
 	const enabledModules = ref<Module[]>([])
 	const enabledModulesOrder = ref<number[]>([])
+
 	const audioCtx = ref(new window.AudioContext());
+	const midiAccess = ref<MIDIAccess>()
 
 	async function init() {
+		midiAccess.value = await navigator.requestMIDIAccess()
+
+		audioCtx.value.audioWorklet.addModule(MIDIInputProcessorURL)
+
 		for(const module of [
 			// Source
 			new AudioPlayerModule(),
 			new InputDeviceModule(),
+			new MIDIInputModule(),
 			new OscillatorModule(),
 
 			// Filter
@@ -290,7 +300,7 @@ export const useModuleStore = defineStore('module', () => {
 	}
 
 	return {
-		modules, enabledModules, enabledModulesOrder, audioCtx,
+		modules, enabledModules, enabledModulesOrder, audioCtx, midiAccess,
 		init, add, remove, updateValue,
 		baseDragStart, baseDragOver, baseDrop,
 		enabledDragOver, enabledDrop,

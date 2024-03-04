@@ -107,4 +107,8 @@ export class NumberUtil {
 			z: vector2d.y * Math.cos(vRad)
 		}
 	}
+
+	public static noteNumberToFreq(note: number): number {
+		return 440 * Math.pow(2, (note - 69) / 12)
+	}
 }
