@@ -37,7 +37,7 @@ export default class SplitterModule extends Module {
 	}
 
 	onEnable(idx: number) {
-		this._onEnable(idx)
+		super.onEnable(idx)
 
 		this.data.output = this.moduleStore.audioCtx.createChannelSplitter(2)
 		this.data.input = this.data.output

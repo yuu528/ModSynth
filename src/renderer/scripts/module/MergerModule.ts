@@ -37,7 +37,7 @@ export default class MergerModule extends Module {
 	}
 
 	onEnable(idx: number) {
-		this._onEnable(idx)
+		super.onEnable(idx)
 
 		this.data.output = this.moduleStore.audioCtx.createChannelMerger(2)
 		this.data.input = this.data.output

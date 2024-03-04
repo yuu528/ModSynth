@@ -44,7 +44,7 @@ export default class DelayModule extends Module {
 	}
 
 	onEnable(idx: number) {
-		this._onEnable(idx)
+		super.onEnable(idx)
 
 		const timeCtrl = this.getControl('time')
 

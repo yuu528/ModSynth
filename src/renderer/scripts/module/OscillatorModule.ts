@@ -72,7 +72,7 @@ export default class OscillatorModule extends Module {
 	}
 
 	onEnable(idx: number) {
-		this._onEnable(idx)
+		super.onEnable(idx)
 
 		const ctrls = this.getControls()
 

@@ -76,7 +76,7 @@ export default class MonitorModule extends Module {
 	}
 
 	onEnable(idx: number) {
-		this._onEnable(idx)
+		super.onEnable(idx)
 
 		this.data.input = this.moduleStore.audioCtx.createAnalyser()
 

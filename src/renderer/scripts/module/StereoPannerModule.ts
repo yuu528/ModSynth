@@ -43,7 +43,7 @@ export default class StereoPannerModule extends Module {
 	}
 
 	onEnable(idx: number) {
-		this._onEnable(idx)
+		super.onEnable(idx)
 
 		const panCtrl = this.getControl('pan')
 

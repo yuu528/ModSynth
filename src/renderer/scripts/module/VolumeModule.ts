@@ -43,7 +43,7 @@ export default class VolumeModule extends Module {
 	}
 
 	onEnable(idx: number) {
-		this._onEnable(idx)
+		super.onEnable(idx)
 
 		const volCtrl = this.getControl('volume')
 

@@ -86,7 +86,7 @@ export default class AudioPlayerModule extends Module {
 	}
 
 	onEnable(idx: number) {
-		this._onEnable(idx)
+		super.onEnable(idx)
 
 		const audioCtrl = this.getControl('audio')
 		if(audioCtrl === undefined) return

@@ -43,19 +43,18 @@ export default class Module {
 	}
 
 	getControlIds(): string[] {
-		if(this.data === undefined) return {}
-		if(this.data.controls === undefined) return {}
+		if(this.data === undefined) return []
+		if(this.data.controls === undefined) return []
 
 		return this.data.controls.map(control => control.id)
 	}
 
-	protected _onEnable(idx: number) {
+	onEnable(idx: number) {
 		if(this.data === undefined) return
 
 		this.data.idx = idx
 	}
 
 	clone(): Module { return new Module() }
-	onEnable(idx: number) {}
 	updateValue(idx: number, id: string, value: number | string | Event | File) {}
 }

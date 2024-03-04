@@ -111,7 +111,7 @@ export default class ParamEQModule extends Module {
 	}
 
 	onEnable(idx: number) {
-		this._onEnable(idx)
+		super.onEnable(idx)
 
 		const ctrls = this.getControls()
 
