@@ -7,6 +7,8 @@ import Component from '../enum/Component'
 import Module from './Module'
 
 export default class MIDIInputModule extends Module {
+	private notes: number[][] = []
+
 	constructor() {
 		super()
 
@@ -113,14 +115,23 @@ export default class MIDIInputModule extends Module {
 		const noteParam = midi.parameters.get('note')
 		const velParam = midi.parameters.get('velocity')
 
-		if((event.data[0] & 0xf0) === 0x90) { // Note on
+		if((event.data[0] & 0xf0) === 0x90 && event.data[2] !== 0) { // Note on
 			noteParam.setValueAtTime(event.data[1], this.moduleStore.audioCtx.currentTime)
 			velParam.setValueAtTime(event.data[2], this.moduleStore.audioCtx.currentTime)
+			this.notes.push([event.data[1], event.data[2]])
+			console.log(this.notes)
 		}
 
-		if((event.data[0] & 0xf0) === 0x80) { // Note off
-			noteParam.setValueAtTime(0, this.moduleStore.audioCtx.currentTime)
-			velParam.setValueAtTime(0, this.moduleStore.audioCtx.currentTime)
+		if((event.data[0] & 0xf0) === 0x80 || event.data[2] === 0) { // Note off
+			this.notes = this.notes.filter(note => note[0] !== event.data[1])
+
+			if(this.notes.length === 0) {
+				noteParam.setValueAtTime(0, this.moduleStore.audioCtx.currentTime)
+				velParam.setValueAtTime(0, this.moduleStore.audioCtx.currentTime)
+			} else {
+				noteParam.setValueAtTime(this.notes.slice(-1)[0][0], this.moduleStore.audioCtx.currentTime)
+				velParam.setValueAtTime(this.notes.slice(-1)[0][1], this.moduleStore.audioCtx.currentTime)
+			}
 		}
 	}
 }
