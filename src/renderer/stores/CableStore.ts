@@ -81,13 +81,13 @@ export const useCableStore = defineStore('cable', () => {
 			}
 
 			if(src !== null && dest !== null) {
-				switch(parseInt(jack1.dataset.type as string)) {
-					case JackType.AUDIO_OUTPUT:
+				switch(parseInt(jack2.dataset.type as string)) {
+					case JackType.AUDIO_INPUT:
 						(src as AudioNode).connect(dest as AudioNode, jack1Idx, jack2Idx)
 						getParentModule(p2)?.onConnectedTo(jack2.dataset.id as string)
 					break
 
-					case JackType.CV_OUTPUT:
+					case JackType.CV_INPUT:
 						(src as AudioNode).connect(dest as AudioParam)
 						getParentModule(p2)?.onConnectedTo(jack2.dataset.id as string)
 					break
@@ -124,13 +124,13 @@ export const useCableStore = defineStore('cable', () => {
 			}
 
 			if(src !== null && dest !== null) {
-				switch(parseInt(jack1.dataset.type as string)) {
-					case JackType.AUDIO_OUTPUT:
+				switch(parseInt(jack2.dataset.type as string)) {
+					case JackType.AUDIO_INPUT:
 						src.disconnect(dest as AudioNode, jack1Idx, jack2Idx)
 						getParentModule(cable.j2)?.onDisconnectedTo(jack2.dataset.id as string)
 					break
 
-					case JackType.CV_OUTPUT:
+					case JackType.CV_INPUT:
 						src.disconnect(dest as AudioParam)
 						getParentModule(cable.j2)?.onDisconnectedTo(jack2.dataset.id as string)
 					break
