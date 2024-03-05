@@ -4,6 +4,8 @@ import ModuleCategory from '../enum/ModuleCategory'
 import JackType from '../enum/JackType'
 import Component from '../enum/Component'
 
+import { NumberUtil } from '../util/NumberUtil'
+
 import Module from './Module'
 
 export default class OscillatorModule extends Module {
@@ -61,6 +63,16 @@ export default class OscillatorModule extends Module {
 			],
 			jacks: [
 				{
+					id: 'gainInput',
+					name: 'Gain CV',
+					type: JackType.CV_INPUT
+				},
+				{
+					id: 'frequencyInput',
+					name: 'Freq CV',
+					type: JackType.CV_INPUT
+				},
+				{
 					id: 'output',
 					name: 'Out',
 					type: JackType.AUDIO_OUTPUT
@@ -81,17 +93,56 @@ export default class OscillatorModule extends Module {
 		const ctrls = this.getControls()
 
 		const input = this.moduleStore.audioCtx.createOscillator()
+		const cvGain = this.moduleStore.audioCtx.createGain()
+		const cvFreq = this.moduleStore.audioCtx.createGain()
 		const output = this.moduleStore.audioCtx.createGain()
 
 		this.inputs.input = input
+		this.inputs.gainInput = cvGain.gain
+		this.inputs.frequencyInput = cvFreq
 		this.outputs.output = output
 
 		input.type = ctrls.type.value
 		input.frequency.setValueAtTime(ctrls.frequency.value as number, this.moduleStore.audioCtx.currentTime)
+		cvGain.gain.setValueAtTime(1, this.moduleStore.audioCtx.currentTime)
+		cvFreq.gain.setValueAtTime(NumberUtil.noteNumberToFreq(127), this.moduleStore.audioCtx.currentTime)
 		output.gain.setValueAtTime(ctrls.volume.value as number, this.moduleStore.audioCtx.currentTime)
 
-		input.connect(output)
+		cvFreq.connect(input.frequency)
+		input.connect(cvGain).connect(output)
+
 		input.start()
+	}
+
+	onConnectedTo(jackId: string) {
+		const input = this.inputs.input as OscillatorNode
+
+		switch(jackId) {
+			case 'frequencyInput':
+				// when frequency input range: 0 -> 1,
+				// frequency value range: noteNumberToFreq(0) -> noteNumberToFreq(127)
+				// center frequency: noteNumberToFreq(0)
+				input.frequency.setValueAtTime(NumberUtil.noteNumberToFreq(0), this.moduleStore.audioCtx.currentTime)
+
+				const freqCtrl = this.getControl('frequency')
+				if(freqCtrl === undefined) return
+				freqCtrl.disabled = true
+			break
+		}
+	}
+
+	onDisconnectedTo(jackId: string) {
+		const input = this.inputs.input as OscillatorNode
+
+		switch(jackId) {
+			case 'frequencyInput':
+				input.frequency.setValueAtTime(this.getControls().frequency.value as number, this.moduleStore.audioCtx.currentTime)
+
+				const freqCtrl = this.getControl('frequency')
+				if(freqCtrl === undefined) return
+				freqCtrl.disabled = false
+			break
+		}
 	}
 
 	updateValue(idx: number, id: string, value: number | string) {

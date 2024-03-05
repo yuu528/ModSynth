@@ -69,7 +69,13 @@ export default class Module {
 		this.data.idx = idx
 	}
 
-	async init() {}
+	onConnectedTo(jackId: string) {}
+
+	onDisconnectedTo(jackId: string) {}
+
 	clone(): Module { return new Module() }
+
+	async init() {}
+
 	updateValue(idx: number, id: string, value: number | string | Event | File) {}
 }

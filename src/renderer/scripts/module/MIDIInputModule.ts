@@ -26,16 +26,14 @@ export default class MIDIInputModule extends Module {
 			],
 			jacks: [
 				{
-					id: 'velOut',
+					id: 'velocityOutput',
 					name: 'Vel Out',
-					type: JackType.CV_OUTPUT,
-					index: 0
+					type: JackType.CV_OUTPUT
 				},
 				{
-					id: 'pitchOut',
+					id: 'pitchOutput',
 					name: 'Pitch Out',
-					type: JackType.CV_OUTPUT,
-					index: 1
+					type: JackType.CV_OUTPUT
 				}
 			]
 		}
@@ -69,13 +67,23 @@ export default class MIDIInputModule extends Module {
 
 		const ctrls = this.getControls()
 
-		this.outputs.output = new AudioWorkletNode(
+		const midi = new AudioWorkletNode(
 			this.moduleStore.audioCtx,
 			'MIDIInputProcessor',
 			{
 				numberOfOutputs: 2
 			}
 		)
+		const velocityOutput = this.moduleStore.audioCtx.createGain()
+		const pitchOutput = this.moduleStore.audioCtx.createGain()
+
+		this.intNodes.midi = midi
+		this.outputs.velocityOutput = velocityOutput
+		this.outputs.pitchOutput = pitchOutput
+
+		midi.connect(velocityOutput, 0)
+		midi.connect(pitchOutput, 1)
+
 		this.enableMIDIInput(ctrls.device.value as string)
 	}
 
@@ -100,10 +108,10 @@ export default class MIDIInputModule extends Module {
 	}
 
 	private onMIDIMessage(event: MIDIMessageEvent) {
-		const output = this.outputs.output as AudioWorkletNode
+		const midi = this.intNodes.midi as AudioWorkletNode
 
-		const noteParam = output.parameters.get('note')
-		const velParam = output.parameters.get('velocity')
+		const noteParam = midi.parameters.get('note')
+		const velParam = midi.parameters.get('velocity')
 
 		if((event.data[0] & 0xf0) === 0x90) { // Note on
 			noteParam.setValueAtTime(event.data[1], this.moduleStore.audioCtx.currentTime)

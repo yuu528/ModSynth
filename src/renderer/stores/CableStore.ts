@@ -67,8 +67,8 @@ export const useCableStore = defineStore('cable', () => {
 
 			updateCables()
 
-			const src = getAudioNode(p1, jack1.dataset.id)
-			const dest = getAudioNode(p2, jack2.dataset.id)
+			const src = getAudioNode(p1, jack1.dataset.id as string)
+			const dest = getAudioNode(p2, jack2.dataset.id as string)
 
 			let jack1Idx = undefined
 			if(jack1.dataset.index !== undefined) {
@@ -81,7 +81,17 @@ export const useCableStore = defineStore('cable', () => {
 			}
 
 			if(src !== null && dest !== null) {
-				src.connect(dest, jack1Idx, jack2Idx)
+				switch(parseInt(jack1.dataset.type as string)) {
+					case JackType.AUDIO_OUTPUT:
+						(src as AudioNode).connect(dest as AudioNode, jack1Idx, jack2Idx)
+						getParentModule(p2)?.onConnectedTo(jack2.dataset.id as string)
+					break
+
+					case JackType.CV_OUTPUT:
+						(src as AudioNode).connect(dest as AudioParam)
+						getParentModule(p2)?.onConnectedTo(jack2.dataset.id as string)
+					break
+				}
 			}
 		}
 	}
@@ -98,8 +108,10 @@ export const useCableStore = defineStore('cable', () => {
 			const jack1 = getJack(cable.j1)
 			const jack2 = getJack(cable.j2)
 
-			const src = getAudioNode(cable.j1, jack1.dataset.id)
-			const dest = getAudioNode(cable.j2, jack2.dataset.id)
+			if(jack1 === undefined || jack2 === undefined) continue
+
+			const src = getAudioNode(cable.j1, jack1.dataset.id as string) as AudioNode
+			const dest = getAudioNode(cable.j2, jack2.dataset.id as string)
 
 			let jack1Idx = undefined
 			if(jack1 !== undefined && jack1.dataset.index !== undefined) {
@@ -112,7 +124,17 @@ export const useCableStore = defineStore('cable', () => {
 			}
 
 			if(src !== null && dest !== null) {
-				src.disconnect(dest, jack1Idx, jack2Idx)
+				switch(parseInt(jack1.dataset.type as string)) {
+					case JackType.AUDIO_OUTPUT:
+						src.disconnect(dest as AudioNode, jack1Idx, jack2Idx)
+						getParentModule(cable.j2)?.onDisconnectedTo(jack2.dataset.id as string)
+					break
+
+					case JackType.CV_OUTPUT:
+						src.disconnect(dest as AudioParam)
+						getParentModule(cable.j2)?.onDisconnectedTo(jack2.dataset.id as string)
+					break
+				}
 			}
 		}
 		updateCables()
