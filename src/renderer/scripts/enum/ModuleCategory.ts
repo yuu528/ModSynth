@@ -1,7 +1,8 @@
 enum ModuleCategory {
 	SOURCE = 'Source',
 	VISUAL = 'Visual',
-	FILTER = 'Filter'
+	FILTER = 'Filter',
+	OTHER = 'Other'
 }
 
 export default ModuleCategory

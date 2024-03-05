@@ -5,7 +5,8 @@
       size="x-small"
       ref="jack"
       draggable="true"
-      :data-id="props.dataKey"
+      :data-key="props.dataKey"
+      :data-id="props.dataId"
       :data-type="props.dataType"
       :data-index="props.dataIdx"
       :data-moduleIdx="props.dataModuleIdx"
@@ -41,6 +42,7 @@ onMounted(() => {
 const props = defineProps([
   'name',
   'dataKey',
+  'dataId',
   'dataType',
   'dataIdx',
   'dataModuleIdx'

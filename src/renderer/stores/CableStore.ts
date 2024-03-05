@@ -67,8 +67,8 @@ export const useCableStore = defineStore('cable', () => {
 
 			updateCables()
 
-			const src = getAudioNode(p1)
-			const dest = getAudioNode(p2)
+			const src = getAudioNode(p1, jack1.dataset.id)
+			const dest = getAudioNode(p2, jack2.dataset.id)
 
 			let jack1Idx = undefined
 			if(jack1.dataset.index !== undefined) {
@@ -95,11 +95,11 @@ export const useCableStore = defineStore('cable', () => {
 		)
 
 		for(const cable of removed) {
-			const src = getAudioNode(cable.j1)
-			const dest = getAudioNode(cable.j2)
-
 			const jack1 = getJack(cable.j1)
 			const jack2 = getJack(cable.j2)
+
+			const src = getAudioNode(cable.j1, jack1.dataset.id)
+			const dest = getAudioNode(cable.j2, jack2.dataset.id)
 
 			let jack1Idx = undefined
 			if(jack1 !== undefined && jack1.dataset.index !== undefined) {
@@ -124,14 +124,14 @@ export const useCableStore = defineStore('cable', () => {
 		jacks.value.push(el)
 	}
 
-	function getJack(id: string) {
+	function getJack(key: string) {
 		return jacks.value.find(jack =>
-			jack.dataset.id === id
+			jack.dataset.key === key
 		)
 	}
 
-	function getJackPos(id: string) {
-		const jack = getJack(id)
+	function getJackPos(key: string) {
+		const jack = getJack(key)
 
 		if(jack === undefined) return undefined
 
@@ -151,28 +151,29 @@ export const useCableStore = defineStore('cable', () => {
 		return moduleStore.enabledModules[parseInt(jack.dataset.moduleidx)]
 	}
 
-	function getAudioNode(id: string) {
-		if(id.indexOf('master') !== -1) {
+	function getAudioNode(key: string, id: string) {
+		if(key.indexOf('master') !== -1) {
 			return moduleStore.audioCtx.destination
 		}
 
-		const jack = getJack(id) as HTMLElement
-		const module = getParentModule(id)
+		const jack = getJack(key) as HTMLElement
+		const module = getParentModule(key)
 
 		if(jack.dataset.type === undefined || module === undefined) return null
-		if(module.data === undefined) return null
 
 		let result = undefined
 		if(jack !== undefined && module !== undefined) {
 			switch(parseInt(jack.dataset.type)) {
 				case JackType.AUDIO_OUTPUT:
-					if(module.data.output === undefined) return null
-					result = module.data.output
+				case JackType.CV_OUTPUT:
+					if(!(id in module.outputs)) return null
+					result = module.outputs[id]
 					break
 
 				case JackType.AUDIO_INPUT:
-					if(module.data.input === undefined) return null
-					result = module.data.input
+				case JackType.CV_INPUT:
+					if(!(id in module.inputs)) return null
+					result = module.inputs[id]
 					break
 			}
 
@@ -227,10 +228,10 @@ export const useCableStore = defineStore('cable', () => {
 
 		const target = event.target as HTMLElement
 
-		if(target.dataset.id === undefined) return
+		if(target.dataset.key === undefined) return
 
-		if(target.closest('.enabledModule') !== null || target.dataset.id.indexOf('master') !== -1) {
-			event.dataTransfer.setData(mimes.value.cableId1, target.dataset.id)
+		if(target.closest('.enabledModule') !== null || target.dataset.key.indexOf('master') !== -1) {
+			event.dataTransfer.setData(mimes.value.cableId1, target.dataset.key)
 		}
 	}
 
@@ -256,11 +257,11 @@ export const useCableStore = defineStore('cable', () => {
 
 		const target = event.target as HTMLElement
 
-		if(target.dataset.id === undefined) return
+		if(target.dataset.key === undefined) return
 
 		if(event.dataTransfer.types.includes(mimes.value.cableId1)) {
 			const id1 = event.dataTransfer.getData(mimes.value.cableId1)
-			const id2 = target.dataset.id
+			const id2 = target.dataset.key
 
 			add(id1, id2)
 		}
@@ -271,9 +272,9 @@ export const useCableStore = defineStore('cable', () => {
 
 		const target = event.target as HTMLElement
 
-		if(target.dataset.id === undefined) return
+		if(target.dataset.key === undefined) return
 
-		remove(target.dataset.id)
+		remove(target.dataset.key)
 	}
 
 	return {

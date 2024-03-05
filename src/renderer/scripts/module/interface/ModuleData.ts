@@ -10,15 +10,9 @@ export default interface ModuleData {
 	name: string
 	category: ModuleCategory
 
-	idx?: number
+	idx: number
 
-	controls?: Control[]
-	monitors?: Monitor[]
-	jacks?: Jack[]
-
-	pos?: Pos
-
-	input?: AudioNode
-	output?: AudioNode
-	intNodes?: AudioNode[]
+	controls: Control[]
+	monitors: Monitor[]
+	jacks: Jack[]
 }

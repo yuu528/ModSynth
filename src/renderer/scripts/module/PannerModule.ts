@@ -14,135 +14,140 @@ import ModuleCategory from '../enum/ModuleCategory'
 import JackType from '../enum/JackType'
 import Component from '../enum/Component'
 
-import ModuleData from './interface/ModuleData'
-
 import Module from './Module'
 
 import { NumberUtil } from '../util/NumberUtil'
 
 export default class PannerModule extends Module {
-	data: ModuleData = {
-		id: 'panner',
-		name: 'Panner',
-		category: ModuleCategory.FILTER,
-		monitors: [
-			{
-				id: 'vMonitor',
-				name: 'Side View',
-				width: 200,
-				height: 200
-			},
-			{
-				id: 'hMonitor',
-				name: 'Plan View',
-				width: 200,
-				height: 200
-			}
-		],
-		controls: [
-			{
-				id: 'innerAngle',
-				name: 'Inner Angle',
-				component: Component.Knob,
-				min: 0,
-				max: 360,
-				step: 1,
-				value: 60
-			},
-			{
-				id: 'outerAngle',
-				name: 'Outer Angle',
-				component: Component.Knob,
-				min: 0,
-				max: 360,
-				step: 1,
-				value: 90
-			},
-			{
-				id: 'outerGain',
-				name: 'Outer Gain',
-				component: Component.Knob,
-				min: 0,
-				max: 1,
-				step: 0.1,
-				value: 0
-			},
-			{
-				id: 'distanceModel',
-				name: 'Dist Type',
-				component: Component.Knob,
-				min: 0,
-				max: 2,
-				step: 1,
-				value: 1,
-				valueLabels: ['Lin', 'Inv', 'Exp']
-			},
-			{
-				id: 'hDeg',
-				name: 'H Rot',
-				component: Component.Knob,
-				min: -360,
-				max: 360,
-				step: 1,
-				value: 0
-			},
-			{
-				id: 'vDeg',
-				name: 'V Rot',
-				component: Component.Knob,
-				min: -360,
-				max: 360,
-				step: 1,
-				value: 0
-			},
-			{
-				id: 'panningModel',
-				name: 'Pan Type',
-				component: Component.Knob,
-				min: 0,
-				max: 1,
-				step: 1,
-				value: 0,
-				valueLabels: ['EP', 'HRTF']
-			},
-			{
-				id: 'x',
-				name: 'X',
-				component: Component.Knob,
-				min: -100,
-				max: 100,
-				step: 1,
-				value: 0
-			},
-			{
-				id: 'y',
-				name: 'Y',
-				component: Component.Knob,
-				min: -100,
-				max: 100,
-				step: 1,
-				value: 0
-			},
-			{
-				id: 'z',
-				name: 'Z',
-				component: Component.Knob,
-				min: -100,
-				max: 100,
-				step: 1,
-				value: 0
-			},
-		],
-		jacks: [
-			{
-				name: 'In',
-				type: JackType.AUDIO_INPUT
-			},
-			{
-				name: 'Out',
-				type: JackType.AUDIO_OUTPUT
-			}
-		]
+	constructor() {
+		super()
+
+		this.data = {
+			...this.data,
+			id: 'panner',
+			name: 'Panner',
+			category: ModuleCategory.FILTER,
+			monitors: [
+				{
+					id: 'vMonitor',
+					name: 'Side View',
+					width: 200,
+					height: 200
+				},
+				{
+					id: 'hMonitor',
+					name: 'Plan View',
+					width: 200,
+					height: 200
+				}
+			],
+			controls: [
+				{
+					id: 'innerAngle',
+					name: 'Inner Angle',
+					component: Component.Knob,
+					min: 0,
+					max: 360,
+					step: 1,
+					value: 60
+				},
+				{
+					id: 'outerAngle',
+					name: 'Outer Angle',
+					component: Component.Knob,
+					min: 0,
+					max: 360,
+					step: 1,
+					value: 90
+				},
+				{
+					id: 'outerGain',
+					name: 'Outer Gain',
+					component: Component.Knob,
+					min: 0,
+					max: 1,
+					step: 0.1,
+					value: 0
+				},
+				{
+					id: 'distanceModel',
+					name: 'Dist Type',
+					component: Component.Knob,
+					min: 0,
+					max: 2,
+					step: 1,
+					value: 1,
+					valueLabels: ['Lin', 'Inv', 'Exp']
+				},
+				{
+					id: 'hDeg',
+					name: 'H Rot',
+					component: Component.Knob,
+					min: -360,
+					max: 360,
+					step: 1,
+					value: 0
+				},
+				{
+					id: 'vDeg',
+					name: 'V Rot',
+					component: Component.Knob,
+					min: -360,
+					max: 360,
+					step: 1,
+					value: 0
+				},
+				{
+					id: 'panningModel',
+					name: 'Pan Type',
+					component: Component.Knob,
+					min: 0,
+					max: 1,
+					step: 1,
+					value: 0,
+					valueLabels: ['EP', 'HRTF']
+				},
+				{
+					id: 'x',
+					name: 'X',
+					component: Component.Knob,
+					min: -100,
+					max: 100,
+					step: 1,
+					value: 0
+				},
+				{
+					id: 'y',
+					name: 'Y',
+					component: Component.Knob,
+					min: -100,
+					max: 100,
+					step: 1,
+					value: 0
+				},
+				{
+					id: 'z',
+					name: 'Z',
+					component: Component.Knob,
+					min: -100,
+					max: 100,
+					step: 1,
+					value: 0
+				},
+			],
+			jacks: [
+				{
+					id: 'input',
+					name: 'In',
+					type: JackType.AUDIO_INPUT
+				},
+				{
+					id: 'output',
+					name: 'Out',
+					type: JackType.AUDIO_OUTPUT
+				}
+			]
+		}
 	}
 
 	clone() {
@@ -156,46 +161,45 @@ export default class PannerModule extends Module {
 
 		const ctrls = this.getControls()
 
-		this.data.output = this.moduleStore.audioCtx.createPanner()
+		const output = this.moduleStore.audioCtx.createPanner()
+		this.outputs.output = output
 
-		if(!(this.data.output instanceof PannerNode)) return
-
-		this.data.output.coneInnerAngle = ctrls.innerAngle.value as number
-		this.data.output.coneOuterAngle = ctrls.outerAngle.value as number
-		this.data.output.coneOuterGain = ctrls.outerGain.value as number
-		this.data.output.distanceModel = ['linear', 'inverse', 'exponential'][ctrls.distanceModel.value as number]
+		output.coneInnerAngle = ctrls.innerAngle.value as number
+		output.coneOuterAngle = ctrls.outerAngle.value as number
+		output.coneOuterGain = ctrls.outerGain.value as number
+		output.distanceModel = ['linear', 'inverse', 'exponential'][ctrls.distanceModel.value as number]
 
 		this.updateOrientation(ctrls.hDeg.value as number, ctrls.vDeg.value as number)
 
-		this.data.output.panningModel = ['equalpower', 'HRTF'][ctrls.panningModel.value as number]
+		output.panningModel = ['equalpower', 'HRTF'][ctrls.panningModel.value as number]
 
-		this.data.output.positionX.setValueAtTime(ctrls.x.value as number, this.moduleStore.audioCtx.currentTime)
-		this.data.output.positionY.setValueAtTime(ctrls.y.value as number, this.moduleStore.audioCtx.currentTime)
-		this.data.output.positionZ.setValueAtTime(-(ctrls.z.value as number), this.moduleStore.audioCtx.currentTime)
+		output.positionX.setValueAtTime(ctrls.x.value as number, this.moduleStore.audioCtx.currentTime)
+		output.positionY.setValueAtTime(ctrls.y.value as number, this.moduleStore.audioCtx.currentTime)
+		output.positionZ.setValueAtTime(-(ctrls.z.value as number), this.moduleStore.audioCtx.currentTime)
 
-		this.data.input = this.data.output
+		this.inputs.input = output
 
 		this.draw()
 	}
 
 	updateValue(idx: number, id: string, value: number | string) {
-		if(!(this.data.output instanceof PannerNode)) return
+		const output = this.outputs.output as PannerNode
 
 		switch(id) {
 			case 'innerAngle':
-				this.data.output.coneInnerAngle = value as number
+				output.coneInnerAngle = value as number
 			break
 
 			case 'outerAngle':
-			this.data.output.coneOuterAngle = value as number
+				output.coneOuterAngle = value as number
 			break
 
 			case 'outerGain':
-			this.data.output.coneOuterGain = value as number
+				output.coneOuterGain = value as number
 			break
 
 			case 'distanceModel':
-				this.data.output.distanceModel = ['linear', 'inverse', 'exponential'][value as number]
+				output.distanceModel = ['linear', 'inverse', 'exponential'][value as number]
 			break
 
 			case 'hDeg':
@@ -221,14 +225,14 @@ export default class PannerModule extends Module {
 			break
 
 			case 'panningModel':
-				this.data.output.panningModel = ['equalpower', 'HRTF'][value as number]
+				output.panningModel = ['equalpower', 'HRTF'][value as number]
 			break
 
 			case 'x':
 				{
 					const ctrls = this.getControls()
 
-					this.data.output.positionX.setValueAtTime(value as number, this.moduleStore.audioCtx.currentTime)
+					output.positionX.setValueAtTime(value as number, this.moduleStore.audioCtx.currentTime)
 				}
 			break
 
@@ -236,7 +240,7 @@ export default class PannerModule extends Module {
 				{
 					const ctrl = this.getControls()
 
-					this.data.output.positionY.setValueAtTime(value as number, this.moduleStore.audioCtx.currentTime)
+					output.positionY.setValueAtTime(value as number, this.moduleStore.audioCtx.currentTime)
 				}
 			break
 
@@ -244,7 +248,7 @@ export default class PannerModule extends Module {
 				{
 					const ctrls = this.getControls()
 
-					this.data.output.positionZ.setValueAtTime(value as number, this.moduleStore.audioCtx.currentTime)
+					output.positionZ.setValueAtTime(value as number, this.moduleStore.audioCtx.currentTime)
 				}
 			break
 		}
@@ -253,20 +257,19 @@ export default class PannerModule extends Module {
 	}
 
 	private updateOrientation(hDeg: number, vDeg: number) {
-		if(this.data.output === undefined || !(this.data.output instanceof PannerNode)) return
+		const output = this.outputs.output as PannerNode
 
 		const vec = NumberUtil.degToVector3d(hDeg + 90, vDeg)
 
-
-		this.data.output.orientationX.setValueAtTime(
+		output.orientationX.setValueAtTime(
 			vec.x,
 			this.moduleStore.audioCtx.currentTime
 		)
-		this.data.output.orientationY.setValueAtTime(
+		output.orientationY.setValueAtTime(
 			vec.y,
 			this.moduleStore.audioCtx.currentTime
 		)
-		this.data.output.orientationZ.setValueAtTime(
+		output.orientationZ.setValueAtTime(
 			vec.z,
 			this.moduleStore.audioCtx.currentTime
 		)

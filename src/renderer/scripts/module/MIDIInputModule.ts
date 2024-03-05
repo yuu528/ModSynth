@@ -4,36 +4,41 @@ import ModuleCategory from '../enum/ModuleCategory'
 import JackType from '../enum/JackType'
 import Component from '../enum/Component'
 
-import ModuleData from './interface/ModuleData'
-
 import Module from './Module'
 
 export default class MIDIInputModule extends Module {
-	data: ModuleData = {
-		id: 'midiInput',
-		name: 'MIDI Input',
-		category: ModuleCategory.SOURCE,
-		controls: [
-			{
-				id: 'device',
-				name: 'Device',
-				component: Component.Select,
-				items: [],
-				value: ''
-			}
-		],
-		jacks: [
-			{
-				name: 'Vel Out',
-				type: JackType.CV_OUTPUT,
-				index: 0
-			},
-			{
-				name: 'Pitch Out',
-				type: JackType.CV_OUTPUT,
-				index: 1
-			}
-		]
+	constructor() {
+		super()
+
+		this.data = {
+			...this.data,
+			id: 'midiInput',
+			name: 'MIDI Input',
+			category: ModuleCategory.SOURCE,
+			controls: [
+				{
+					id: 'device',
+					name: 'Device',
+					component: Component.Select,
+					items: [],
+					value: ''
+				}
+			],
+			jacks: [
+				{
+					id: 'velOut',
+					name: 'Vel Out',
+					type: JackType.CV_OUTPUT,
+					index: 0
+				},
+				{
+					id: 'pitchOut',
+					name: 'Pitch Out',
+					type: JackType.CV_OUTPUT,
+					index: 1
+				}
+			]
+		}
 	}
 
 	async init() {
@@ -64,7 +69,7 @@ export default class MIDIInputModule extends Module {
 
 		const ctrls = this.getControls()
 
-		this.data.output = new AudioWorkletNode(
+		this.outputs.output = new AudioWorkletNode(
 			this.moduleStore.audioCtx,
 			'MIDIInputProcessor',
 			{
@@ -95,10 +100,10 @@ export default class MIDIInputModule extends Module {
 	}
 
 	private onMIDIMessage(event: MIDIMessageEvent) {
-		if(!(this.data.output instanceof AudioWorkletNode)) return
+		const output = this.outputs.output as AudioWorkletNode
 
-		const noteParam = this.data.output.parameters.get('note')
-		const velParam = this.data.output.parameters.get('velocity')
+		const noteParam = output.parameters.get('note')
+		const velParam = output.parameters.get('velocity')
 
 		if((event.data[0] & 0xf0) === 0x90) { // Note on
 			noteParam.setValueAtTime(event.data[1], this.moduleStore.audioCtx.currentTime)

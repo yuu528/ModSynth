@@ -6,43 +6,43 @@ import ModuleCategory from '../enum/ModuleCategory'
 import JackType from '../enum/JackType'
 import Component from '../enum/Component'
 
-import ModuleData from './interface/ModuleData'
-
 import Module from './Module'
 
 export default class InputDeviceModule extends Module {
-	data: ModuleData = {
-		id: 'inputDevice',
-		name: 'Input Device',
-		category: ModuleCategory.SOURCE,
-		controls: [
-			{
-				id: 'device',
-				name: 'Device',
-				component: Component.Select,
-				items: [],
-				value: ''
-			},
-			{
-				id: 'volume',
-				name: 'Vol',
-				component: Component.Knob,
-				min: 0,
-				max: 2,
-				step: 1e-2,
-				value: 1
-			}
-		],
-		jacks: [
-			{
-				name: 'Out',
-				type: JackType.AUDIO_OUTPUT
-			}
-		]
-	}
-
 	constructor() {
-		super();
+		super()
+
+		this.data = {
+			...this.data,
+			id: 'inputDevice',
+			name: 'Input Device',
+			category: ModuleCategory.SOURCE,
+			controls: [
+				{
+					id: 'device',
+					name: 'Device',
+					component: Component.Select,
+					items: [],
+					value: ''
+				},
+				{
+					id: 'volume',
+					name: 'Vol',
+					component: Component.Knob,
+					min: 0,
+					max: 2,
+					step: 1e-2,
+					value: 1
+				}
+			],
+			jacks: [
+				{
+					id: 'output',
+					name: 'Out',
+					type: JackType.AUDIO_OUTPUT
+				}
+			]
+		}
 	}
 
 	async init() {
@@ -71,13 +71,11 @@ export default class InputDeviceModule extends Module {
 		const ctrls = this.getControls();
 
 		(async () => {
-			if(typeof ctrls.device.value !== 'string') return
-
-			this.data.input = this.moduleStore.audioCtx.createMediaStreamSource(
+			this.inputs.input = this.moduleStore.audioCtx.createMediaStreamSource(
 				await navigator.mediaDevices.getUserMedia({
 					audio: {
 						deviceId: {
-							exact: ctrls.device.value
+							exact: ctrls.device.value as string
 						},
 						autoGainControl: false,
 						echoCancellation: false,
@@ -86,8 +84,8 @@ export default class InputDeviceModule extends Module {
 				})
 			)
 
-			this.data.output = this.moduleStore.audioCtx.createGain()
-			this.data.input.connect(this.data.output)
+			this.outputs.output = this.moduleStore.audioCtx.createGain()
+			this.inputs.input.connect(this.outputs.output)
 		})()
 	}
 
@@ -104,13 +102,11 @@ export default class InputDeviceModule extends Module {
 					})
 
 					const jackId = `m${idx}.Out`
-					const removed: Cable[] = this.cableStore.remove(jackId)
+					const removed: Cable[] = this.cableStore.remove(jackId);
 
-					if(this.data.input !== undefined) {
-						this.data.input.disconnect()
-					}
-					this.data.input = this.moduleStore.audioCtx.createMediaStreamSource(newStream)
-					this.data.input.connect(this.data.output as AudioNode)
+					(this.inputs.input as AudioNode).disconnect()
+					this.inputs.input = this.moduleStore.audioCtx.createMediaStreamSource(newStream)
+					this.inputs.input.connect(this.outputs.output)
 
 					for(const cable of removed) {
 						this.cableStore.add(cable.j1, cable.j2)
@@ -119,8 +115,7 @@ export default class InputDeviceModule extends Module {
 			break
 
 			case 'volume':
-				if(!(this.data.output instanceof GainNode)) return
-				this.data.output.gain.setValueAtTime(value as number, this.moduleStore.audioCtx.currentTime)
+				(this.outputs.output as GainNode).gain.setValueAtTime(value as number, this.moduleStore.audioCtx.currentTime)
 			break
 		}
 

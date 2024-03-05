@@ -3,31 +3,37 @@ import { toRaw } from 'vue'
 import ModuleCategory from '../enum/ModuleCategory'
 import JackType from '../enum/JackType'
 
-import ModuleData from './interface/ModuleData'
-
 import Module from './Module'
 
 export default class MergerModule extends Module {
-	data: ModuleData = {
-		id: 'merger',
-		name: 'Channel Merger',
-		category: ModuleCategory.FILTER,
-		jacks: [
-			{
-				name: 'L',
-				type: JackType.AUDIO_INPUT,
-				index: 0
-			},
-			{
-				name: 'R',
-				type: JackType.AUDIO_INPUT,
-				index: 1
-			},
-			{
-				name: 'Out',
-				type: JackType.AUDIO_OUTPUT
-			}
-		]
+	constructor() {
+		super()
+
+		this.data = {
+			...this.data,
+			id: 'merger',
+			name: 'Channel Merger',
+			category: ModuleCategory.FILTER,
+			jacks: [
+				{
+					id: 'input',
+					name: 'L',
+					type: JackType.AUDIO_INPUT,
+					index: 0
+				},
+				{
+					id: 'input',
+					name: 'R',
+					type: JackType.AUDIO_INPUT,
+					index: 1
+				},
+				{
+					id: 'output',
+					name: 'Out',
+					type: JackType.AUDIO_OUTPUT
+				}
+			]
+		}
 	}
 
 	clone() {
@@ -39,7 +45,7 @@ export default class MergerModule extends Module {
 	onEnable(idx: number) {
 		super.onEnable(idx)
 
-		this.data.output = this.moduleStore.audioCtx.createChannelMerger(2)
-		this.data.input = this.data.output
+		this.outputs.output = this.moduleStore.audioCtx.createChannelMerger(2)
+		this.inputs.input = this.outputs.output
 	}
 }

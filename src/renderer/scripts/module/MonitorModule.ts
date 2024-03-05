@@ -4,70 +4,74 @@ import ModuleCategory from '../enum/ModuleCategory'
 import JackType from '../enum/JackType'
 import Component from '../enum/Component'
 
-import ModuleData from './interface/ModuleData'
-
 import { NumberUtil } from '../util/NumberUtil'
 
 import Module from './Module'
 
 export default class MonitorModule extends Module {
-	data: ModuleData = {
-		id: 'monitor',
-		name: 'Monitor',
-		category: ModuleCategory.VISUAL,
-		controls: [
-			{
-				id: 'fftMax',
-				name: 'FFT Max',
-				component: Component.Knob,
-				min: 1e3,
-				max: 16e3,
-				step: 1e3,
-				value: 16e3,
-				si: true
-			},
-			{
-				id: 'scopeSize',
-				name: 'Scope Size',
-				component: Component.Knob,
-				min: 1,
-				max: 16,
-				step: 1,
-				value: 8
-			},
-			{
-				id: 'scopeAmp',
-				name: 'Scope Amp',
-				component: Component.Knob,
-				min: 1,
-				max: 16,
-				step: 1,
-				value: 1
-			}
-		],
-		monitors: [
-			{
-				id: 'oscilloscope',
-				name: 'Oscilloscope',
-				width: 200,
-				height: 80
-			},
-			{
-				id: 'fft',
-				name: 'FFT',
-				width: 200,
-				height: 80
-			},
-		],
-		jacks: [
-			{
-				name: 'In',
-				type: JackType.AUDIO_INPUT
-			}
-		]
-	}
-
 	private strokeColor = 'limegreen'
+
+	constructor() {
+		super()
+
+		this.data = {
+			...this.data,
+			id: 'monitor',
+			name: 'Monitor',
+			category: ModuleCategory.VISUAL,
+			controls: [
+				{
+					id: 'fftMax',
+					name: 'FFT Max',
+					component: Component.Knob,
+					min: 1e3,
+					max: 16e3,
+					step: 1e3,
+					value: 16e3,
+					si: true
+				},
+				{
+					id: 'scopeSize',
+					name: 'Scope Size',
+					component: Component.Knob,
+					min: 1,
+					max: 16,
+					step: 1,
+					value: 8
+				},
+				{
+					id: 'scopeAmp',
+					name: 'Scope Amp',
+					component: Component.Knob,
+					min: 1,
+					max: 16,
+					step: 1,
+					value: 1
+				}
+			],
+			monitors: [
+				{
+					id: 'oscilloscope',
+					name: 'Oscilloscope',
+					width: 200,
+					height: 80
+				},
+				{
+					id: 'fft',
+					name: 'FFT',
+					width: 200,
+					height: 80
+				},
+			],
+			jacks: [
+				{
+					id: 'input',
+					name: 'In',
+					type: JackType.AUDIO_INPUT
+				}
+			]
+		}
+	}
 
 	clone() {
 		const result = new MonitorModule()
@@ -78,11 +82,10 @@ export default class MonitorModule extends Module {
 	onEnable(idx: number) {
 		super.onEnable(idx)
 
-		this.data.input = this.moduleStore.audioCtx.createAnalyser()
+		const analyser = this.moduleStore.audioCtx.createAnalyser()
+		this.inputs.input = analyser
 
-		if(!(this.data.input instanceof AnalyserNode)) return
-
-		this.data.input.fftSize = 2048
+		analyser.fftSize = 2048
 
 		this.drawScope()
 		this.drawFFT()
@@ -110,10 +113,6 @@ export default class MonitorModule extends Module {
 
 	private drawScope() {
 		requestAnimationFrame(() => this.drawScope())
-		if(this.data === undefined) return
-		if(this.data.monitors === undefined) return
-		if(!(this.data.input instanceof AnalyserNode)) return
-
 		const canvas = document.getElementById(`m${this.data.idx}.monitor.${this.data.monitors[0].id}`) as HTMLCanvasElement
 
 		if(canvas !== null) {
@@ -131,11 +130,13 @@ export default class MonitorModule extends Module {
 			const scopeSize = scopeSizeCtrl.value as number
 			const scopeAmp = scopeAmpCtrl.value as number
 
-			const len = this.data.input.frequencyBinCount / (maxScopeSize - scopeSize + 1)
+			const input = this.inputs.input as AnalyserNode
+
+			const len = input.frequencyBinCount / (maxScopeSize - scopeSize + 1)
 			const sliceWidth = (canvas.width) / (len - 2)
 
 			const data = new Uint8Array(len)
-			this.data.input.getByteTimeDomainData(data)
+			input.getByteTimeDomainData(data)
 
 			ctx.fillStyle = 'black'
 			ctx.fillRect(0, 0, canvas.width, canvas.height)
@@ -147,10 +148,10 @@ export default class MonitorModule extends Module {
 
 			for(let i = 0, x = 0; i < len; i++, x += sliceWidth) {
 				const y = data[i] / 256 * canvas.height * scopeAmp - (canvas.height / 2) * (scopeAmp - 1)
-			if(i === 0) {
-				ctx.moveTo(x, y)
+				if(i === 0) {
+					ctx.moveTo(x, y)
 				} else {
-				ctx.lineTo(x, y)
+					ctx.lineTo(x, y)
 				}
 			}
 
@@ -164,7 +165,6 @@ export default class MonitorModule extends Module {
 		requestAnimationFrame(() => this.drawFFT())
 		if(this.data === undefined) return
 		if(this.data.monitors === undefined) return
-		if(!(this.data.input instanceof AnalyserNode)) return
 
 		const canvas = document.getElementById(`m${this.data.idx}.monitor.${this.data.monitors[1].id}`) as HTMLCanvasElement
 
@@ -173,12 +173,14 @@ export default class MonitorModule extends Module {
 
 			if(ctx === null) return
 
-			const len = this.data.input.frequencyBinCount
+			const input = this.inputs.input as AnalyserNode
+
+			const len = input.frequencyBinCount
 
 			const data = new Uint8Array(len)
-			this.data.input.getByteFrequencyData(data)
+			input.getByteFrequencyData(data)
 
-			const freqStep = this.moduleStore.audioCtx.sampleRate / this.data.input.fftSize
+			const freqStep = this.moduleStore.audioCtx.sampleRate / input.fftSize
 
 			const fftMaxCtrl = this.getControl('fftMax')
 

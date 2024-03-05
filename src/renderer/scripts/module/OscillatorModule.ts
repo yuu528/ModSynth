@@ -4,65 +4,69 @@ import ModuleCategory from '../enum/ModuleCategory'
 import JackType from '../enum/JackType'
 import Component from '../enum/Component'
 
-import ModuleData from './interface/ModuleData'
-
 import Module from './Module'
 
 export default class OscillatorModule extends Module {
-	data: ModuleData = {
-		id: 'oscillator',
-		name: 'Osc',
-		category: ModuleCategory.SOURCE,
-		controls: [
-			{
-				id: 'type',
-				name: 'Type',
-				component: Component.Select,
-				items: [
-					{
-						value: 'sine',
-						image: '/images/waveforms/sine.svg'
-					},
-					{
-						value: 'square',
-						image: '/images/waveforms/square.svg'
-					},
-					{
-						value: 'sawtooth',
-						image: '/images/waveforms/sawtooth.svg'
-					},
-					{
-						value: 'triangle',
-						image: '/images/waveforms/triangle.svg'
-					}
-				],
-				value: 'sine'
-			},
-			{
-				id: 'frequency',
-				name: 'Freq',
-				component: Component.Knob,
-				min: 1,
-				max: 16e3,
-				step: 1,
-				value: 1e3
-			},
-			{
-				id: 'volume',
-				name: 'Vol',
-				component: Component.Knob,
-				min: 0,
-				max: 2,
-				step: 1e-2,
-				value: 1
-			}
-		],
-		jacks: [
-			{
-				name: 'Out',
-				type: JackType.AUDIO_OUTPUT
-			}
-		]
+	constructor() {
+	super()
+
+		this.data = {
+			...this.data,
+			id: 'oscillator',
+			name: 'Osc',
+			category: ModuleCategory.SOURCE,
+			controls: [
+				{
+					id: 'type',
+					name: 'Type',
+					component: Component.Select,
+					items: [
+						{
+							value: 'sine',
+							image: '/images/waveforms/sine.svg'
+						},
+						{
+							value: 'square',
+							image: '/images/waveforms/square.svg'
+						},
+						{
+							value: 'sawtooth',
+							image: '/images/waveforms/sawtooth.svg'
+						},
+						{
+							value: 'triangle',
+							image: '/images/waveforms/triangle.svg'
+						}
+					],
+					value: 'sine'
+				},
+				{
+					id: 'frequency',
+					name: 'Freq',
+					component: Component.Knob,
+					min: 1,
+					max: 16e3,
+					step: 1,
+					value: 1e3
+				},
+				{
+					id: 'volume',
+					name: 'Vol',
+					component: Component.Knob,
+					min: 0,
+					max: 2,
+					step: 1e-2,
+					value: 1
+				}
+			],
+			jacks: [
+				{
+					id: 'output',
+					name: 'Out',
+					type: JackType.AUDIO_OUTPUT
+				}
+			]
+		}
 	}
 
 	clone() {
@@ -76,33 +80,35 @@ export default class OscillatorModule extends Module {
 
 		const ctrls = this.getControls()
 
-		this.data.input = this.moduleStore.audioCtx.createOscillator()
-		this.data.output = this.moduleStore.audioCtx.createGain()
+		const input = this.moduleStore.audioCtx.createOscillator()
+		const output = this.moduleStore.audioCtx.createGain()
 
-		if(!(this.data.input instanceof OscillatorNode) || !(this.data.output instanceof GainNode)) return
+		this.inputs.input = input
+		this.outputs.output = output
 
-		this.data.input.type = ctrls.type.value
-		this.data.input.frequency.setValueAtTime(ctrls.frequency.value as number, this.moduleStore.audioCtx.currentTime)
-		this.data.output.gain.setValueAtTime(ctrls.volume.value as number, this.moduleStore.audioCtx.currentTime)
+		input.type = ctrls.type.value
+		input.frequency.setValueAtTime(ctrls.frequency.value as number, this.moduleStore.audioCtx.currentTime)
+		output.gain.setValueAtTime(ctrls.volume.value as number, this.moduleStore.audioCtx.currentTime)
 
-		this.data.input.connect(this.data.output)
-		this.data.input.start()
+		input.connect(output)
+		input.start()
 	}
 
 	updateValue(idx: number, id: string, value: number | string) {
-		if(!(this.data.input instanceof OscillatorNode) || !(this.data.output instanceof GainNode)) return
+		const input = this.inputs.input as OscillatorNode
+		const output = this.outputs.output as GainNode
 
 		switch(id) {
 			case 'type':
-				this.data.input.type = value
+				input.type = value
 			break
 
 			case 'frequency':
-				this.data.input.frequency.setValueAtTime(value as number, this.moduleStore.audioCtx.currentTime)
+				input.frequency.setValueAtTime(value as number, this.moduleStore.audioCtx.currentTime)
 			break
 
 			case 'volume':
-				this.data.output.gain.setValueAtTime(value as number, this.moduleStore.audioCtx.currentTime)
+				output.gain.setValueAtTime(value as number, this.moduleStore.audioCtx.currentTime)
 			break
 		}
 	}

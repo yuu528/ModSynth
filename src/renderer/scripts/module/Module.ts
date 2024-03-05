@@ -1,11 +1,25 @@
 import { useCableStore } from '../../stores/CableStore'
 import { useModuleStore } from '../../stores/ModuleStore'
 
+import ModuleCategory from '../enum/ModuleCategory'
+
 import Control from './interface/Control'
 import ModuleData from './interface/ModuleData'
 
 export default class Module {
-	data: ModuleData | undefined
+	data: ModuleData = {
+		id: '',
+		name: '',
+		category: ModuleCategory.OTHER,
+		idx: -1,
+		controls: [],
+		monitors: [],
+		jacks: [],
+	}
+
+	inputs: {[id: string]: AudioNode | AudioParam} = {}
+	outputs: {[id: string]: AudioNode} = {}
+	intNodes: {[id: string]: AudioNode} = {}
 
 	protected moduleStore
 	protected cableStore
