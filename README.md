@@ -4,26 +4,34 @@ Modular synthesizer app for PC
 ## Features
 - [x] Module System
 - [x] Wiring System
-- [ ] Keyboard Input
-- [ ] Audio Input
+- [x] Keyboard Input
+- [x] Audio Input
 - [ ] Save
 
 ## Modules
+### Source
+- [x] MIDI for VFO, VCO
+- [x] Audio Device Input
+- [x] Audio File Player
+- [x] VCO
+
+### Filter
 - [x] Volume
-- [x] Static Oscillator
-- [ ] VCO
 - [ ] VCF
 - [ ] LFO
 - [ ] ADSR
 - [ ] VCA
-- [ ] MIDI for VFO, VCO
-- [ ] Audio Input
-- [ ] Effect
 - [ ] Mixer
-- [ ] Delay
-- [x] Monitor
+- [x] Delay
+- [x] Channel Merger/Splitter
+- [x] Stereo Panner
+- [x] Echo
+- [x] EQ
+- [x] Compressor
+- [x] 3D Panner
 
-and more...
+### Visual
+- [x] Monitor
 
 ## Installation
 There are no pre-built binary yet.
