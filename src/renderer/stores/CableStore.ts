@@ -36,9 +36,15 @@ export const useCableStore = defineStore('cable', () => {
 		const type1 = parseInt(jack1.dataset.type)
 		const type2 = parseInt(jack2.dataset.type)
 
-		if(type1 === JackType.AUDIO_OUTPUT && type2 === JackType.AUDIO_INPUT) {
+		if(
+			(type1 === JackType.AUDIO_OUTPUT || type1 === JackType.CV_OUTPUT)
+				&& (type2 === JackType.AUDIO_INPUT || type2 === JackType.CV_INPUT)
+		) {
 			// nothing
-		} else if(type1 === JackType.AUDIO_INPUT && type2 === JackType.AUDIO_OUTPUT) {
+		} else if(
+			(type1 === JackType.AUDIO_INPUT || type1 === JackType.CV_INPUT)
+				&& (type2 === JackType.AUDIO_OUTPUT || type2 === JackType.CV_OUTPUT)
+		) {
 			// swap
 			const tmp = p1
 			p1 = p2
