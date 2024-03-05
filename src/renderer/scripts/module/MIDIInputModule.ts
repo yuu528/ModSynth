@@ -119,7 +119,6 @@ export default class MIDIInputModule extends Module {
 			noteParam.setValueAtTime(event.data[1], this.moduleStore.audioCtx.currentTime)
 			velParam.setValueAtTime(event.data[2], this.moduleStore.audioCtx.currentTime)
 			this.notes.push([event.data[1], event.data[2]])
-			console.log(this.notes)
 		}
 
 		if((event.data[0] & 0xf0) === 0x80 || event.data[2] === 0) { // Note off
