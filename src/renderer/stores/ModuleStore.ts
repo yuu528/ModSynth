@@ -91,12 +91,17 @@ export const useModuleStore = defineStore('module', () => {
 	function remove(idx: number) {
 		const module = enabledModules.value[idx]
 
-		if(module.data === undefined) return
-
 		enabledModulesOrder.value = enabledModulesOrder.value.filter(order => order !== idx)
 
-		module.data.input?.disconnect()
-		module.data.output?.disconnect()
+		for(const input of Object.values(module.inputs)) {
+			if(input instanceof AudioNode) {
+				input.disconnect()
+			}
+		}
+
+		for(const output of Object.values(module.outputs)) {
+			output.disconnect()
+		}
 
 		delete enabledModules.value[idx]
 
