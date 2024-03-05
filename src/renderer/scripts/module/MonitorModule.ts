@@ -147,7 +147,7 @@ export default class MonitorModule extends Module {
 			ctx.beginPath()
 
 			for(let i = 0, x = 0; i < len; i++, x += sliceWidth) {
-				const y = data[i] / 256 * canvas.height * scopeAmp - (canvas.height / 2) * (scopeAmp - 1)
+				const y = canvas.height - (data[i] / 256 * canvas.height * scopeAmp - (canvas.height / 2) * (scopeAmp - 1))
 				if(i === 0) {
 					ctx.moveTo(x, y)
 				} else {
