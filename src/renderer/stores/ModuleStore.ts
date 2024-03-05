@@ -14,6 +14,7 @@ import CompressorModule from '../scripts/module/CompressorModule'
 import DelayModule from '../scripts/module/DelayModule'
 import EchoModule from '../scripts/module/EchoModule'
 import InputDeviceModule from '../scripts/module/InputDeviceModule'
+import LFOModule from '../scripts/module/LFOModule'
 import MIDIInputModule from '../scripts/module/MIDIInputModule'
 import MergerModule from '../scripts/module/MergerModule'
 import MonitorModule from '../scripts/module/MonitorModule'
@@ -55,6 +56,7 @@ export const useModuleStore = defineStore('module', () => {
 			new InputDeviceModule(),
 			new MIDIInputModule(),
 			new OscillatorModule(),
+			new LFOModule(),
 
 			// Filter
 			new MergerModule(),
