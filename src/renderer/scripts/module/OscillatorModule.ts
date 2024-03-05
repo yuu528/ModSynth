@@ -93,24 +93,33 @@ export default class OscillatorModule extends Module {
 		const ctrls = this.getControls()
 
 		const input = this.moduleStore.audioCtx.createOscillator()
+		const cvGainInput = this.moduleStore.audioCtx.createGain()
+		const cvGainInputOffset = this.moduleStore.audioCtx.createConstantSource()
 		const cvGain = this.moduleStore.audioCtx.createGain()
 		const cvFreq = this.moduleStore.audioCtx.createGain()
 		const output = this.moduleStore.audioCtx.createGain()
 
 		this.inputs.input = input
-		this.inputs.gainInput = cvGain.gain
+		this.inputs.gainInput = cvGainInput
+		this.intNodes.cvGainInputOffset = cvGainInputOffset
 		this.inputs.frequencyInput = cvFreq
 		this.outputs.output = output
 
 		input.type = ctrls.type.value
 		input.frequency.setValueAtTime(ctrls.frequency.value as number, this.moduleStore.audioCtx.currentTime)
+		cvGainInput.gain.setValueAtTime(1, this.moduleStore.audioCtx.currentTime)
+		cvGainInputOffset.offset.setValueAtTime(-1, this.moduleStore.audioCtx.currentTime)
 		cvGain.gain.setValueAtTime(1, this.moduleStore.audioCtx.currentTime)
 		cvFreq.gain.setValueAtTime(NumberUtil.noteNumberToFreq(127), this.moduleStore.audioCtx.currentTime)
 		output.gain.setValueAtTime(ctrls.volume.value as number, this.moduleStore.audioCtx.currentTime)
 
+		cvGainInput.connect(cvGain.gain)
+		cvGainInputOffset.connect(cvGain.gain)
 		cvFreq.connect(input.frequency)
+
 		input.connect(cvGain).connect(output)
 
+		cvGainInputOffset.start()
 		input.start()
 	}
 

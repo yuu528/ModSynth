@@ -31,7 +31,7 @@ class MIDIInputProcessor extends AudioWorkletProcessor {
 						parameters.velocity.length > i
 							? parameters.velocity[i]
 							: parameters.velocity[0],
-						0, 127, -1, 0
+						0, 127, 0, 1
 					)
 				}
 			})
