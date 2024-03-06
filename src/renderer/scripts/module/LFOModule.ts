@@ -58,6 +58,15 @@ export default class LFOModule extends Module {
 					min: 0,
 					max: 2,
 					step: 1e-2,
+					value: 0.5
+				},
+				{
+					id: 'offset',
+					name: 'Offset',
+					component: Component.Knob,
+					min: -1,
+					max: 1,
+					step: 0.1,
 					value: 1
 				}
 			],
@@ -83,23 +92,29 @@ export default class LFOModule extends Module {
 		const ctrls = this.getControls()
 
 		const input = this.moduleStore.audioCtx.createOscillator()
+		const offset = this.moduleStore.audioCtx.createConstantSource()
 		const output = this.moduleStore.audioCtx.createGain()
 
 		this.inputs.input = input
+		this.intNodes.offset = offset
 		this.outputs.output = output
 
 		input.type = ctrls.type.value
 		input.frequency.setValueAtTime(ctrls.frequency.value as number, this.moduleStore.audioCtx.currentTime)
+		offset.offset.setValueAtTime(ctrls.offset.value as number, this.moduleStore.audioCtx.currentTime)
 		output.gain.setValueAtTime(ctrls.volume.value as number, this.moduleStore.audioCtx.currentTime)
 
+		offset.connect(output)
 		input.connect(output)
 
+		offset.start()
 		input.start()
 	}
 
 	updateValue(idx: number, id: string, value: number | string) {
 		const input = this.inputs.input as OscillatorNode
 		const output = this.outputs.output as GainNode
+		const offset = this.intNodes.offset as ConstantSourceNode
 
 		switch(id) {
 			case 'type':
@@ -112,6 +127,10 @@ export default class LFOModule extends Module {
 
 			case 'volume':
 				output.gain.setValueAtTime(value as number, this.moduleStore.audioCtx.currentTime)
+			break
+
+			case 'offset':
+				offset.offset.setValueAtTime(value as number, this.moduleStore.audioCtx.currentTime)
 			break
 		}
 	}
