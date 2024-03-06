@@ -37,6 +37,11 @@ export default class VolumeModule extends Module {
 			],
 			jacks: [
 				{
+					id: 'gainCvInput',
+					name: 'Gain CV',
+					type: JackType.CV_INPUT
+				},
+				{
 					id: 'input',
 					name: 'In',
 					type: JackType.AUDIO_INPUT
@@ -63,16 +68,25 @@ export default class VolumeModule extends Module {
 
 		const input = this.moduleStore.audioCtx.createGain()
 		const offset = this.moduleStore.audioCtx.createConstantSource()
+		const gainCvInput = this.moduleStore.audioCtx.createGain()
+		const output = this.moduleStore.audioCtx.createGain()
 
 		this.intNodes.offset = offset
+
+		this.inputs.gainCvInput = gainCvInput
+
 		this.inputs.input = input
+		this.outputs.output = output
 
 		input.gain.setValueAtTime(ctrls.volume.value as number, this.moduleStore.audioCtx.currentTime)
 		offset.offset.setValueAtTime(ctrls.offset.value as number, this.moduleStore.audioCtx.currentTime)
-		offset.connect(input)
+
+		gainCvInput.connect(output.gain)
+
+		offset.connect(output)
+		input.connect(output)
 
 		offset.start()
-		this.outputs.output = input
 	}
 
 	updateValue(idx: number, id: string, value: number) {
