@@ -120,7 +120,7 @@ export default class EchoModule extends Module {
 			.connect(feedback)
 			.connect(mixer)
 			.connect(wetVol)
-			.connect(input)
+			.connect(output)
 
 		// input -> dry vol -> output
 		input
