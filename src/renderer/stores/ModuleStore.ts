@@ -25,8 +25,6 @@ import SplitterModule from '../scripts/module/SplitterModule'
 import StereoPannerModule from '../scripts/module/StereoPannerModule'
 import VolumeModule from '../scripts/module/VolumeModule'
 
-import MIDIInputProcessorURL from '../scripts/processor/MIDIInputProcessor.ts?url'
-
 export const useModuleStore = defineStore('module', () => {
 	const cableStore = useCableStore()
 
@@ -47,8 +45,6 @@ export const useModuleStore = defineStore('module', () => {
 
 	async function init() {
 		midiAccess.value = await navigator.requestMIDIAccess()
-
-		audioCtx.value.audioWorklet.addModule(MIDIInputProcessorURL)
 
 		for(const module of [
 			// Source

@@ -4,6 +4,8 @@ import ModuleCategory from '../enum/ModuleCategory'
 import JackType from '../enum/JackType'
 import Component from '../enum/Component'
 
+import { NumberUtil } from '../util/NumberUtil'
+
 import Module from './Module'
 
 export default class MIDIInputModule extends Module {
@@ -69,22 +71,17 @@ export default class MIDIInputModule extends Module {
 
 		const ctrls = this.getControls()
 
-		const midi = new AudioWorkletNode(
-			this.moduleStore.audioCtx,
-			'MIDIInputProcessor',
-			{
-				numberOfOutputs: 2
-			}
-		)
-		const velocityOutput = this.moduleStore.audioCtx.createGain()
-		const pitchOutput = this.moduleStore.audioCtx.createGain()
+		const velocityOutput = this.moduleStore.audioCtx.createConstantSource()
+		const pitchOutput = this.moduleStore.audioCtx.createConstantSource()
 
-		this.intNodes.midi = midi
+		velocityOutput.offset.setValueAtTime(0, this.moduleStore.audioCtx.currentTime)
+		pitchOutput.offset.setValueAtTime(0, this.moduleStore.audioCtx.currentTime)
+
 		this.outputs.velocityOutput = velocityOutput
 		this.outputs.pitchOutput = pitchOutput
 
-		midi.connect(velocityOutput, 0)
-		midi.connect(pitchOutput, 1)
+		velocityOutput.start()
+		pitchOutput.start()
 
 		this.enableMIDIInput(ctrls.device.value as string)
 	}
@@ -109,15 +106,29 @@ export default class MIDIInputModule extends Module {
 		}
 	}
 
+	private setParams(note: number, velocity: number) {
+		const pitchOutput = this.outputs.pitchOutput as ConstantSourceNode
+		const velocityOutput = this.outputs.velocityOutput as ConstantSourceNode
+
+		pitchOutput.offset.setValueAtTime(
+			NumberUtil.map(
+				NumberUtil.noteNumberToFreq(note),
+				NumberUtil.noteNumberToFreq(0),
+				NumberUtil.noteNumberToFreq(127),
+				0, 1
+			),
+			this.moduleStore.audioCtx.currentTime
+		)
+
+		velocityOutput.offset.setValueAtTime(
+			NumberUtil.map(velocity, 0, 127, 0, 1),
+			this.moduleStore.audioCtx.currentTime
+		)
+	}
+
 	private onMIDIMessage(event: MIDIMessageEvent) {
-		const midi = this.intNodes.midi as AudioWorkletNode
-
-		const noteParam = midi.parameters.get('note')
-		const velParam = midi.parameters.get('velocity')
-
 		if((event.data[0] & 0xf0) === 0x90 && event.data[2] !== 0) { // Note on
-			noteParam.setValueAtTime(event.data[1], this.moduleStore.audioCtx.currentTime)
-			velParam.setValueAtTime(event.data[2], this.moduleStore.audioCtx.currentTime)
+			this.setParams(event.data[1], event.data[2])
 			this.notes.push([event.data[1], event.data[2]])
 		}
 
@@ -125,11 +136,9 @@ export default class MIDIInputModule extends Module {
 			this.notes = this.notes.filter(note => note[0] !== event.data[1])
 
 			if(this.notes.length === 0) {
-				noteParam.setValueAtTime(0, this.moduleStore.audioCtx.currentTime)
-				velParam.setValueAtTime(0, this.moduleStore.audioCtx.currentTime)
+				this.setParams(0, 0)
 			} else {
-				noteParam.setValueAtTime(this.notes.slice(-1)[0][0], this.moduleStore.audioCtx.currentTime)
-				velParam.setValueAtTime(this.notes.slice(-1)[0][1], this.moduleStore.audioCtx.currentTime)
+				this.setParams(this.notes.slice(-1)[0][0], this.notes.slice(-1)[0][1])
 			}
 		}
 	}
