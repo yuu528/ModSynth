@@ -24,6 +24,7 @@
           v-for="control in props.controls"
           :key="control.name"
           :cols="getCols(control.component)"
+          style="max-width: 100%;"
         >
           <v-text-field
             v-if="control.component === Component.TextField"
