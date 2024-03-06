@@ -9,6 +9,7 @@ import { NumberUtil } from '../util/NumberUtil'
 import Module from './Module'
 
 export default class MIDIInputModule extends Module {
+	private midiListener: AbortController
 	private notes: number[][] = []
 
 	constructor() {
@@ -41,6 +42,8 @@ export default class MIDIInputModule extends Module {
 				}
 			]
 		}
+
+		this.midiListener = new AbortController()
 	}
 
 	async init() {
@@ -95,13 +98,19 @@ export default class MIDIInputModule extends Module {
 	}
 
 	private enableMIDIInput(id: string) {
+		this.midiListener.abort()
+
+		this.midiListener = new AbortController()
+
 		if(this.moduleStore.midiAccess === undefined) return
 
 		for(const input of this.moduleStore.midiAccess.inputs.values()) {
 			if(input.id === id) {
-				input.addEventListener('midimessage', (event: MIDIMessageEvent) => this.onMIDIMessage(event))
-			} else {
-				input.removeEventListener('midimessage', this.onMIDIMessage)
+				input.addEventListener(
+					'midimessage',
+					this.onMIDIMessage.bind(this),
+					{ signal: this.midiListener.signal }
+				)
 			}
 		}
 	}
