@@ -96,12 +96,27 @@ export default class ParamEQModule extends Module {
 			],
 			jacks: [
 				{
+					id: 'freqCvInput',
+					name: 'Freq CV',
+					type: JackType.CV_INPUT
+				},
+				{
+					id: 'QCvInput',
+					name: 'Q CV',
+					type: JackType.CV_INPUT
+				},
+				{
+					id: 'gainCvInput',
+					name: 'Gain CV',
+					type: JackType.CV_INPUT
+				},
+				{
 					id: 'input',
 					name: 'In',
 					type: JackType.AUDIO_INPUT
 				},
 				{
-					id: 'input',
+					id: 'output',
 					name: 'Out',
 					type: JackType.AUDIO_OUTPUT
 				}
@@ -122,14 +137,29 @@ export default class ParamEQModule extends Module {
 
 		ctrls.frequency.max = Math.floor(this.moduleStore.audioCtx.sampleRate / 2)
 
+		const freqCvInput = this.moduleStore.audioCtx.createGain()
+		const QCvInput = this.moduleStore.audioCtx.createGain()
+		const gainCvInput = this.moduleStore.audioCtx.createGain()
 		const output = this.moduleStore.audioCtx.createBiquadFilter()
+
+		this.inputs.freqCvInput = freqCvInput
+		this.inputs.QCvInput = QCvInput
+		this.inputs.gainCvInput = gainCvInput
 		this.outputs.output = output
+
+		freqCvInput.gain.setValueAtTime((ctrls.frequency.max as number) / 2, this.moduleStore.audioCtx.currentTime)
+		QCvInput.gain.setValueAtTime((ctrls.q.max as number) / 2, this.moduleStore.audioCtx.currentTime)
+		gainCvInput.gain.setValueAtTime((ctrls.gain.max as number) / 2, this.moduleStore.audioCtx.currentTime)
 
 		output.type = ctrls.type.value
 		output.frequency.setValueAtTime(ctrls.frequency.value as number, this.moduleStore.audioCtx.currentTime)
 		output.Q.setValueAtTime(ctrls.q.value as number, this.moduleStore.audioCtx.currentTime)
 		output.gain.setValueAtTime(ctrls.gain.value as number, this.moduleStore.audioCtx.currentTime)
 		output.detune.setValueAtTime(ctrls.fine.value as number, this.moduleStore.audioCtx.currentTime)
+
+		freqCvInput.connect(output.frequency)
+		QCvInput.connect(output.Q)
+		gainCvInput.connect(output.gain)
 
 		this.inputs.input = output
 	}
