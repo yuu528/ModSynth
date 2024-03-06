@@ -108,7 +108,7 @@ export default class OscillatorModule extends Module {
 		input.type = ctrls.type.value
 		input.frequency.setValueAtTime(ctrls.frequency.value as number, this.moduleStore.audioCtx.currentTime)
 		cvGainInput.gain.setValueAtTime(1, this.moduleStore.audioCtx.currentTime)
-		cvGainInputOffset.offset.setValueAtTime(-1, this.moduleStore.audioCtx.currentTime)
+		cvGainInputOffset.offset.setValueAtTime(0, this.moduleStore.audioCtx.currentTime)
 		cvGain.gain.setValueAtTime(1, this.moduleStore.audioCtx.currentTime)
 		cvFreq.gain.setValueAtTime(NumberUtil.noteNumberToFreq(127), this.moduleStore.audioCtx.currentTime)
 		output.gain.setValueAtTime(ctrls.volume.value as number, this.moduleStore.audioCtx.currentTime)
@@ -125,8 +125,13 @@ export default class OscillatorModule extends Module {
 
 	onConnectedTo(jackId: string) {
 		const input = this.inputs.input as OscillatorNode
+		const cvGainInputOffset = this.intNodes.cvGainInputOffset as ConstantSourceNode
 
 		switch(jackId) {
+			case 'gainInput':
+				cvGainInputOffset.offset.setValueAtTime(-1, this.moduleStore.audioCtx.currentTime)
+			break
+
 			case 'frequencyInput':
 				// when frequency input range: 0 -> 1,
 				// frequency value range: noteNumberToFreq(0) -> noteNumberToFreq(127)
@@ -142,8 +147,13 @@ export default class OscillatorModule extends Module {
 
 	onDisconnectedTo(jackId: string) {
 		const input = this.inputs.input as OscillatorNode
+		const cvGainInputOffset = this.intNodes.cvGainInputOffset as ConstantSourceNode
 
 		switch(jackId) {
+			case 'gainInput':
+				cvGainInputOffset.offset.setValueAtTime(0, this.moduleStore.audioCtx.currentTime)
+			break
+
 			case 'frequencyInput':
 				input.frequency.setValueAtTime(this.getControls().frequency.value as number, this.moduleStore.audioCtx.currentTime)
 
