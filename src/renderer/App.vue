@@ -19,7 +19,8 @@
       </v-btn>
     </v-system-bar>
     <v-app-bar density="compact">
-      <v-app-bar-title>ModSynth</v-app-bar-title>
+      <v-spacer></v-spacer>
+      <Jack name="Speaker" dataKey="master.output" :dataType="JackType.AUDIO_INPUT" />
     </v-app-bar>
 
     <v-main class="d-flex h-screen">
@@ -87,9 +88,6 @@
           />
         </template>
       </v-sheet>
-      <v-sheet class="flex-shrink-1">
-        <Jack name="Speaker" dataKey="master.output" :dataType="JackType.AUDIO_INPUT" />
-      </v-sheet>
       <svg
         width="100%"
         height="100%"
@@ -98,6 +96,7 @@
         position: absolute;
         top: 0;
         left: 0;
+        z-index: 2000;
         pointer-events: none;
         "
       >
