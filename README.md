@@ -6,7 +6,7 @@ Modular synthesizer app for PC
 - [x] Wiring System
 - [x] Keyboard Input
 - [x] Audio Input
-- [ ] Save
+- [x] Save
 
 ## Modules
 ### Source
@@ -18,9 +18,9 @@ Modular synthesizer app for PC
 ### Filter
 - [x] Volume
 - [ ] VCF
-- [ ] LFO
+- [x] LFO
 - [ ] ADSR
-- [ ] VCA
+- [x] VCA
 - [ ] Mixer
 - [x] Delay
 - [x] Channel Merger/Splitter
