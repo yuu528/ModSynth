@@ -1,7 +1,7 @@
 <template>
   <v-layout>
     <v-system-bar class="d-flex justify-start">
-      <v-btn v-for="menu in menus" variant="text" class="text-none h-100">
+      <v-btn v-for="menu in menus" variant="text" class="text-none h-100 menuBtn">
         {{ menu.name }}
 
         <v-menu activator="parent">
@@ -373,3 +373,10 @@ function calcPath(x1: number, y1: number, x2: number, y2: number) {
   return d
 }
 </script>
+
+<style scoped>
+.menuBtn {
+  min-width: 0;
+  padding: 0 0.5em;
+}
+</style>
