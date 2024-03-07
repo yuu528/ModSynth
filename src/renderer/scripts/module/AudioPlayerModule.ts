@@ -92,12 +92,16 @@ export default class AudioPlayerModule extends Module {
 	onEnable(idx: number) {
 		super.onEnable(idx)
 
-		const audioCtrl = this.getControl('audio')
-		if(audioCtrl === undefined) return
+		const ctrls = this.getControls()
 
-		audioCtrl.elmId = `m${idx}.${audioCtrl.id}`
+		ctrls.audio.elmId = `m${idx}.${ctrls.audio.id}`
 
-		const audioElm = document.getElementById(audioCtrl.elmId) as HTMLAudioElement
+		const audioElm = document.getElementById(ctrls.audio.elmId) as HTMLAudioElement
+
+		// initialize
+		ctrls.seek.max = 0
+		ctrls.seek.value = 0
+		ctrls.play.value = 0
 
 		this.outputs.output = this.moduleStore.audioCtx.createMediaElementSource(audioElm)
 
@@ -133,6 +137,9 @@ export default class AudioPlayerModule extends Module {
 				switch(value.type) {
 					case 'canplay':
 						ctrls.play.disabled = false
+
+						audioElm.playbackRate = ctrls.speed.value as number
+						audioElm.preservesPitch = !!ctrls.pitchCor.value
 					break
 
 					case 'emptied':
