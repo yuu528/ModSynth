@@ -1,5 +1,23 @@
 <template>
   <v-layout>
+    <v-system-bar class="d-flex justify-start">
+      <v-btn v-for="menu in menus" variant="text" class="text-none h-100">
+        {{ menu.name }}
+
+        <v-menu activator="parent">
+          <v-list density="compact">
+            <v-list-item
+              v-for="(item, index) in menu.items"
+              :key="index"
+              :value="index"
+              @click="menuClick(menu.name, item)"
+            >
+              <v-list-item-title>{{ item }}</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </v-btn>
+    </v-system-bar>
     <v-app-bar density="compact">
       <v-app-bar-title>ModSynth</v-app-bar-title>
     </v-app-bar>
@@ -91,14 +109,30 @@
           fill="transparent"
         />
       </svg>
+      <v-dialog v-model="alertVisible">
+        <v-card>
+          <v-card-title>{{ computedAlertData.title }}</v-card-title>
+          <v-card-text>{{ computedAlertData.text }}</v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+
+            <v-btn
+              v-for="button in computedAlertData.buttons"
+              @click="button.fn"
+            >
+              {{ button.text }}
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-main>
   </v-layout>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, nextTick } from 'vue'
 
-import { useCableStore } from './stores/CableStore'
+import { useCableStore, Cable } from './stores/CableStore'
 import { useModuleStore } from './stores/ModuleStore'
 
 import JackType from './scripts/enum/JackType'
@@ -108,6 +142,17 @@ import ModuleClass from './scripts/module/Module'
 import Jack from './components/Jack.vue'
 import Module from './components/Module.vue'
 
+const menus = [
+  {
+    name: 'File',
+    items: [
+      'New',
+      'Open',
+      'Save'
+    ]
+  }
+]
+
 const cableStore = useCableStore()
 const moduleStore = useModuleStore()
 
@@ -116,6 +161,19 @@ const moduleTab = ref<string | null>(null)
 const modulesByCategory = ref<{[category: string]: ModuleClass[]}>({})
 const enabledModulesOrder = computed(() => moduleStore.enabledModulesOrder)
 const enabledModules = computed(() => moduleStore.enabledModules)
+
+const alertVisible = ref(false)
+const alertData = {
+  title: '',
+  text: '',
+  buttons: [
+    {
+      text: '',
+      fn: (): void => {}
+    }
+  ]
+}
+const computedAlertData = computed(() => alertData)
 
 init()
 
@@ -135,6 +193,163 @@ async function init() {
   moduleTab.value = Object.keys(modulesByCategory.value)[0]
 
   window.addEventListener('resize', cableStore.updateCables)
+}
+
+function openAlert(title: string, text: string, buttons: {text: string, fn: () => {}}[]) {
+  alertData.title = title
+  alertData.text = text
+  alertData.buttons = buttons
+  alertVisible.value = true
+}
+
+function closeAlert() {
+  alertVisible.value = false
+}
+
+function menuClick(menuName: string, itemName: string) {
+  switch(menuName) {
+    case 'File':
+      switch(itemName) {
+        case 'New':
+          if(moduleStore.edited) {
+            openAlert(
+              'Confirm',
+              'Are you sure you want to create a new project? All unsaved changes will be lost.',
+              [
+                {
+                  text: 'Yes',
+                  fn: () => {
+                    newProject()
+                    closeAlert()
+                  }
+                },
+                {
+                  text: 'No',
+                  fn: () => {
+                    closeAlert()
+                  }
+                }
+              ]
+            )
+          } else {
+            newProject()
+          }
+        break
+
+        case 'Open':
+          if(moduleStore.edited) {
+            openAlert(
+              'Confirm',
+              'Are you sure you want to open a new project? All unsaved changes will be lost.',
+              [
+                {
+                  text: 'Yes',
+                  fn: () => {
+                    loadFromFile()
+                    closeAlert()
+                  }
+                },
+                {
+                  text: 'No',
+                  fn: () => {
+                    closeAlert()
+                  }
+                }
+              ]
+            )
+          } else {
+            loadFromFile()
+          }
+        break
+
+        case 'Save':
+          saveToFile()
+        break
+      }
+    break
+  }
+}
+
+function newProject() {
+  moduleStore.enabledModules.forEach((module, idx) => {
+    moduleStore.remove(idx)
+  })
+  moduleStore.edited = false
+}
+
+function loadFromFile() {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = '.json'
+  input.addEventListener('change', event => {
+    if(event.target === null) return
+    const target = event.target as HTMLInputElement
+
+    if(target.files === null) return
+    const file = target.files[0]
+    const reader = new FileReader()
+    reader.onload = () => {
+      const data = JSON.parse(reader.result as string)
+
+      newProject()
+
+      data.modules.forEach((module: ModuleClass) => {
+        if(module === null || module === undefined) return
+
+        const base = moduleStore.getModuleBase(module.data.id).clone()
+
+        base.data.controls = module.data.controls
+
+        moduleStore.add(base, module.data.idx)
+      })
+
+      moduleStore.enabledModulesOrder = data.order
+
+      nextTick(() => {
+        data.cables.forEach((cable: Cable) => {
+          cableStore.add(cable.j1, cable.j2)
+        })
+      })
+    }
+
+    reader.readAsText(file)
+  })
+  input.click()
+}
+
+function saveToFile() {
+  const data = {
+    modules: moduleStore.enabledModules,
+    order: moduleStore.enabledModulesOrder,
+    cables: cableStore.cables
+  }
+
+  const json = JSON.stringify(data, (key, value) => {
+    switch(key) {
+      case 'data':
+        return {
+          controls: value.controls,
+          id: value.id,
+          idx: value.idx
+        }
+
+      case 'inputs': return undefined
+      case 'intNodes': return undefined
+      case 'outputs': return undefined
+      case 'moduleStore': return undefined
+      case 'cableStore': return undefined
+      default: return value
+    }
+  })
+
+  const blob = new Blob([json], {type: 'application/json'})
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.download = 'new_project.json'
+  a.href = url
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
 }
 
 function calcPath(x1: number, y1: number, x2: number, y2: number) {

@@ -43,6 +43,8 @@ export const useModuleStore = defineStore('module', () => {
 	const audioCtx = ref(new window.AudioContext());
 	const midiAccess = ref<MIDIAccess>()
 
+	const edited = ref(false)
+
 	async function init() {
 		midiAccess.value = await navigator.requestMIDIAccess()
 
@@ -74,14 +76,20 @@ export const useModuleStore = defineStore('module', () => {
 		}
 	}
 
-	function add(module: Module): number {
-		const idx = enabledModules.value.push(module) - 1
+	function add(module: Module, idx?: number): number {
+		if(idx !== undefined) {
+			enabledModules.value[idx] = module
+		} else {
+			idx = enabledModules.value.push(module) - 1
+		}
 
 		enabledModulesOrder.value.push(idx)
 
 		nextTick(() => {
 			module.onEnable(idx)
 		})
+
+		edited.value = true
 
 		return idx
 	}
@@ -102,6 +110,8 @@ export const useModuleStore = defineStore('module', () => {
 		}
 
 		delete enabledModules.value[idx]
+
+		edited.value = true
 
 		nextTick(() => {
 			cableStore.updateCables()
@@ -303,8 +313,8 @@ export const useModuleStore = defineStore('module', () => {
 	}
 
 	return {
-		modules, enabledModules, enabledModulesOrder, audioCtx, midiAccess,
-		init, add, remove, updateValue,
+		modules, enabledModules, enabledModulesOrder, audioCtx, midiAccess, edited,
+		init, add, remove, updateValue, getModuleBase,
 		baseDragStart, baseDragOver, baseDrop,
 		enabledDragOver, enabledDrop,
 		dragStart, dragOver, dragEnd, drop
