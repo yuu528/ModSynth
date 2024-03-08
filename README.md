@@ -14,14 +14,14 @@ Modular synthesizer app for PC
 - [x] Audio Device Input
 - [x] Audio File Player
 - [x] VCO
+- [ ] Sequencer
 
 ### Filter
 - [x] Volume
-- [ ] VCF
+- [x] VCF
 - [x] LFO
-- [ ] ADSR
+- [x] ADSR
 - [x] VCA
-- [ ] Mixer
 - [x] Delay
 - [x] Channel Merger/Splitter
 - [x] Stereo Panner
