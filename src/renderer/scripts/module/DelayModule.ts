@@ -15,6 +15,7 @@ export default class DelayModule extends Module {
 			id: 'delay',
 			name: 'Delay',
 			category: ModuleCategory.FILTER,
+			icon: 'mdi-timeline-clock',
 			controls: [
 				{
 					id: 'time',

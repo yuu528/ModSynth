@@ -20,6 +20,7 @@ export default class MIDIInputModule extends Module {
 			id: 'midiInput',
 			name: 'MIDI Input',
 			category: ModuleCategory.SOURCE,
+			icon: 'mdi-midi-port',
 			controls: [
 				{
 					id: 'device',

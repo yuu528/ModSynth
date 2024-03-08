@@ -15,6 +15,7 @@ export default class VolumeModule extends Module {
 			id: 'volume',
 			name: 'Volume',
 			category: ModuleCategory.FILTER,
+			icon: 'mdi-knob',
 			controls: [
 				{
 					id: 'volume',

@@ -11,6 +11,7 @@ export default class Module {
 		id: '',
 		name: '',
 		category: ModuleCategory.OTHER,
+		icon: '',
 		idx: -1,
 		controls: [],
 		monitors: [],

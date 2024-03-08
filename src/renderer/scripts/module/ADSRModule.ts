@@ -15,6 +15,7 @@ export default class ADSRModule extends Module {
 			id: 'adsr',
 			name: 'ADSR',
 			category: ModuleCategory.FILTER,
+			icon: 'mdi-tune-vertical',
 			controls: [
 				{
 					id: 'attack',

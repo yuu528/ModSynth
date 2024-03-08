@@ -15,6 +15,7 @@ export default class AudioPlayerModule extends Module {
 			id: 'audioPlayer',
 			name: 'Audio Player',
 			category: ModuleCategory.SOURCE,
+			icon: 'mdi-music',
 			controls: [
 				{
 					id: 'file',

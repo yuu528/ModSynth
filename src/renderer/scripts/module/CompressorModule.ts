@@ -15,6 +15,7 @@ export default class CompressorModule extends Module {
 			id: 'compressor',
 			name: 'Compressor',
 			category: ModuleCategory.FILTER,
+			icon: 'mdi-tune-vertical',
 			controls: [
 				{
 					id: 'threshold',

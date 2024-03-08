@@ -8,6 +8,7 @@ export default interface ModuleData {
 	id: string
 	name: string
 	category: ModuleCategory
+	icon: string
 
 	idx: number
 

@@ -46,6 +46,7 @@
                 v-for="module in modules"
                 class="my-2 mx-2 moduleCard"
                 draggable="true"
+                :prepend-icon="module.data.icon"
                 :key="module.data.id"
                 :data-id="module.data.id"
                 @dragstart="moduleStore.baseDragStart"

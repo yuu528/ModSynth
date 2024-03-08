@@ -15,6 +15,7 @@ export default class StereoPannerModule extends Module {
 			id: 'stereoPanner',
 			name: 'Stereo Panner',
 			category: ModuleCategory.FILTER,
+			icon: 'mdi-speaker-wireless',
 			controls: [
 				{
 					id: 'pan',

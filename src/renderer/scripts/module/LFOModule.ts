@@ -17,6 +17,7 @@ export default class LFOModule extends Module {
 			id: 'lfo',
 			name: 'LFO',
 			category: ModuleCategory.SOURCE,
+			icon: 'mdi-sine-wave',
 			controls: [
 				{
 					id: 'type',

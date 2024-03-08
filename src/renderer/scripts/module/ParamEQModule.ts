@@ -15,6 +15,7 @@ export default class ParamEQModule extends Module {
 			id: 'paramEQ',
 			name: 'Parametric EQ',
 			category: ModuleCategory.FILTER,
+			icon: 'mdi-equalizer',
 			controls: [
 				{
 					id: 'type',

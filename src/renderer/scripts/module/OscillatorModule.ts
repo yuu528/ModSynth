@@ -17,6 +17,7 @@ export default class OscillatorModule extends Module {
 			id: 'oscillator',
 			name: 'Osc',
 			category: ModuleCategory.SOURCE,
+			icon: 'mdi-sine-wave',
 			controls: [
 				{
 					id: 'type',

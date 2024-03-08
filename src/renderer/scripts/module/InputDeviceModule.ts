@@ -17,6 +17,7 @@ export default class InputDeviceModule extends Module {
 			id: 'inputDevice',
 			name: 'Input Device',
 			category: ModuleCategory.SOURCE,
+			icon: 'mdi-audio-input-stereo-minijack',
 			controls: [
 				{
 					id: 'device',

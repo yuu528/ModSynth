@@ -27,6 +27,7 @@ export default class PannerModule extends Module {
 			id: 'panner',
 			name: 'Panner',
 			category: ModuleCategory.FILTER,
+			icon: 'mdi-surround-sound',
 			monitors: [
 				{
 					id: 'vMonitor',

@@ -15,6 +15,7 @@ export default class EchoModule extends Module {
 			id: 'echo',
 			name: 'Echo / Reverb',
 			category: ModuleCategory.FILTER,
+			icon: 'mdi-leak',
 			controls: [
 				{
 					id: 'time',

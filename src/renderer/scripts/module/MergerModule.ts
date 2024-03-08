@@ -14,6 +14,7 @@ export default class MergerModule extends Module {
 			id: 'merger',
 			name: 'Channel Merger',
 			category: ModuleCategory.FILTER,
+			icon: 'mdi-call-merge',
 			jacks: [
 				{
 					id: 'input',

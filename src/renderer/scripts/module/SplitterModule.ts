@@ -14,6 +14,7 @@ export default class SplitterModule extends Module {
 			id: 'splitter',
 			name: 'Channel Splitter',
 			category: ModuleCategory.FILTER,
+			icon: 'mdi-call-split',
 			jacks: [
 				{
 					id: 'input',

@@ -19,6 +19,7 @@ export default class MonitorModule extends Module {
 			id: 'monitor',
 			name: 'Monitor',
 			category: ModuleCategory.VISUAL,
+			icon: 'mdi-monitor-speaker',
 			controls: [
 				{
 					id: 'fftMax',
