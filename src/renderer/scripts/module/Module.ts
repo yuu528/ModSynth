@@ -78,5 +78,5 @@ export default class Module {
 
 	async init() {}
 
-	updateValue(idx: number, id: string, value: number | string | Event | File) {}
+	updateValue(idx: number, id: string, value: number | string | boolean | Event | File) {}
 }

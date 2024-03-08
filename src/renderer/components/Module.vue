@@ -108,6 +108,14 @@
             :color="control.color"
             :bgColor="control.bgColor"
           />
+          <Pilot
+            v-if="control.component === Component.Pilot"
+            v-model="control.value"
+            :class="control.id"
+            :label="control.name"
+            :color="control.color"
+            :colorOff="control.colorOff"
+          />
         </v-col>
       </v-row>
       <v-row no-gutters>
@@ -128,6 +136,7 @@ import Knob from './Knob.vue'
 import Jack from './Jack.vue'
 import Progress from './Progress.vue'
 import Select from './Select.vue'
+import Pilot from './Pilot.vue'
 
 const moduleStore = useModuleStore()
 
@@ -142,6 +151,9 @@ const props = defineProps([
 function getCols(component: Component) {
   switch(component) {
     case Component.Knob:
+      return 3
+
+    case Component.Pilot:
       return 3
 
     default:

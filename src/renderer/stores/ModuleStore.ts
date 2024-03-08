@@ -140,7 +140,7 @@ export const useModuleStore = defineStore('module', () => {
 		})
 	}
 
-	async function updateValue(idx: number, id: string, value: number | string | Event | File) {
+	async function updateValue(idx: number, id: string, value: number | string | boolean | Event | File) {
 		const module = enabledModules.value[idx]
 
 		if(module !== undefined) {

@@ -11,6 +11,7 @@ import Module from './Module'
 export default class MIDIInputModule extends Module {
 	private midiListener: AbortController
 	private notes: number[][] = []
+	private lampTimeout?: number
 
 	constructor() {
 		super()
@@ -28,6 +29,12 @@ export default class MIDIInputModule extends Module {
 					component: Component.Select,
 					items: [],
 					value: ''
+				},
+				{
+					id: 'in',
+					name: 'In',
+					component: Component.Pilot,
+					value: false
 				}
 			],
 			jacks: [
@@ -99,10 +106,17 @@ export default class MIDIInputModule extends Module {
 		this.enableMIDIInput(ctrls.device.value as string)
 	}
 
-	updateValue(idx: number, id: string, value: number | string) {
+	updateValue(idx: number, id: string, value: number | string | boolean) {
 		switch(id) {
 			case 'device':
 				this.enableMIDIInput(value as string)
+			break
+
+			case 'in':
+				const inCtrl = this.getControl('in')
+				if(inCtrl === undefined) return
+
+				inCtrl.value = value as boolean
 			break
 		}
 	}
@@ -155,10 +169,21 @@ export default class MIDIInputModule extends Module {
 		}
 	}
 
+	private onInput() {
+		clearTimeout(this.lampTimeout)
+		this.moduleStore.updateValue(this.data.idx, 'in', true)
+
+		this.lampTimeout = setTimeout(() => {
+			this.moduleStore.updateValue(this.data.idx, 'in', false)
+		}, 100)
+	}
+
 	private onMIDIMessage(event: MIDIMessageEvent) {
 		if((event.data[0] & 0xf0) === 0x90 && event.data[2] !== 0) { // Note on
 			this.setParams(event.data[1], event.data[2])
 			this.notes.push([event.data[1], event.data[2]])
+
+			this.onInput()
 		}
 
 		if((event.data[0] & 0xf0) === 0x80 || event.data[2] === 0) { // Note off
@@ -169,6 +194,8 @@ export default class MIDIInputModule extends Module {
 			} else {
 				this.setParams(this.notes.slice(-1)[0][0], this.notes.slice(-1)[0][1])
 			}
+
+			this.onInput()
 		}
 	}
 }

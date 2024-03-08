@@ -13,7 +13,7 @@ export default interface Control {
 
 	items?: SelectItem[]
 
-	value?: number | string
+	value?: number | string | boolean
 	disabled?: boolean
 
 	color?: string

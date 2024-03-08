@@ -6,7 +6,8 @@ enum Component {
 	Progress,
 	Select,
 	Slider,
-	TextField
+	TextField,
+	Pilot
 }
 
 export default Component
