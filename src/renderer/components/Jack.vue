@@ -1,5 +1,5 @@
 <template>
-  <div class="text-center">
+  <div class="text-center px-1">
     <v-avatar
       color="black"
       size="x-small"

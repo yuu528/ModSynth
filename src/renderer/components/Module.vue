@@ -119,7 +119,11 @@
         </v-col>
       </v-row>
       <v-row no-gutters>
-        <v-col v-for="jack in props.jacks" :key="jack.name">
+        <v-col
+          v-for="jack in props.jacks"
+          :key="jack.name"
+          style="max-width: 100%;"
+        >
           <Jack :name="jack.name" :dataKey="`m${props.idx}.${jack.name}`" :dataId="jack.id" :dataType="jack.type" :dataIdx="jack.index" :dataModuleIdx="props.idx" />
         </v-col>
       </v-row>
