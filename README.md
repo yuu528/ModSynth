@@ -1,6 +1,8 @@
 # ModSynth
 Modular synthesizer app for PC
 
+![ModSynth Demo](images/demo.png)
+
 ## Features
 - [x] Module System
 - [x] Wiring System
