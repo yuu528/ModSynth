@@ -26,19 +26,19 @@ export default class OscillatorModule extends Module {
 					items: [
 						{
 							value: 'sine',
-							image: '/images/waveforms/sine.svg'
+							icon: 'mdi-sine-wave'
 						},
 						{
 							value: 'square',
-							image: '/images/waveforms/square.svg'
+							icon: 'mdi-square-wave'
 						},
 						{
 							value: 'sawtooth',
-							image: '/images/waveforms/sawtooth.svg'
+							icon: 'mdi-sawtooth-wave'
 						},
 						{
 							value: 'triangle',
-							image: '/images/waveforms/triangle.svg'
+							icon: 'mdi-triangle-wave'
 						}
 					],
 					value: 'sine'
