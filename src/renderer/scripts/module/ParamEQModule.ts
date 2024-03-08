@@ -60,7 +60,7 @@ export default class ParamEQModule extends Module {
 					id: 'frequency',
 					name: 'Freq',
 					component: Component.Knob,
-					min: 10,
+					min: 1,
 					max: 16e3,
 					step: 1,
 					value: 350

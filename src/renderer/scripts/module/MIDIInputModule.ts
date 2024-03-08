@@ -31,6 +31,11 @@ export default class MIDIInputModule extends Module {
 			],
 			jacks: [
 				{
+					id: 'gateOutput',
+					name: 'Gate Out',
+					type: JackType.CV_OUTPUT
+				},
+				{
 					id: 'velocityOutput',
 					name: 'Vel Out',
 					type: JackType.CV_OUTPUT
@@ -74,15 +79,19 @@ export default class MIDIInputModule extends Module {
 
 		const ctrls = this.getControls()
 
+		const gateOutput = this.moduleStore.audioCtx.createConstantSource()
 		const velocityOutput = this.moduleStore.audioCtx.createConstantSource()
 		const pitchOutput = this.moduleStore.audioCtx.createConstantSource()
 
+		gateOutput.offset.setValueAtTime(0, this.moduleStore.audioCtx.currentTime)
 		velocityOutput.offset.setValueAtTime(0, this.moduleStore.audioCtx.currentTime)
 		pitchOutput.offset.setValueAtTime(0, this.moduleStore.audioCtx.currentTime)
 
+		this.outputs.gateOutput = gateOutput
 		this.outputs.velocityOutput = velocityOutput
 		this.outputs.pitchOutput = pitchOutput
 
+		gateOutput.start()
 		velocityOutput.start()
 		pitchOutput.start()
 
@@ -115,24 +124,34 @@ export default class MIDIInputModule extends Module {
 		}
 	}
 
-	private setParams(note: number, velocity: number) {
+	private setParams(note?: number, velocity?: number) {
+		const gateOutput = this.outputs.gateOutput as ConstantSourceNode
 		const pitchOutput = this.outputs.pitchOutput as ConstantSourceNode
 		const velocityOutput = this.outputs.velocityOutput as ConstantSourceNode
 
-		pitchOutput.offset.setValueAtTime(
-			NumberUtil.map(
-				NumberUtil.noteNumberToFreq(note),
-				NumberUtil.noteNumberToFreq(0),
-				NumberUtil.noteNumberToFreq(127),
-				0, 1
-			),
-			this.moduleStore.audioCtx.currentTime
-		)
+		if(note !== undefined) {
+			pitchOutput.offset.setValueAtTime(
+				NumberUtil.map(
+					NumberUtil.noteNumberToFreq(note),
+					NumberUtil.noteNumberToFreq(0),
+					NumberUtil.noteNumberToFreq(127),
+					0, 1
+				),
+				this.moduleStore.audioCtx.currentTime
+			)
+		}
 
-		velocityOutput.offset.setValueAtTime(
-			NumberUtil.map(velocity, 0, 127, 0, 1),
-			this.moduleStore.audioCtx.currentTime
-		)
+		if(velocity !== undefined) {
+			velocityOutput.offset.setValueAtTime(
+				NumberUtil.map(velocity, 0, 127, 0, 1),
+				this.moduleStore.audioCtx.currentTime
+			)
+
+			gateOutput.offset.setValueAtTime(
+				velocity === 0 ? 0 : 1,
+				this.moduleStore.audioCtx.currentTime
+			)
+		}
 	}
 
 	private onMIDIMessage(event: MIDIMessageEvent) {
@@ -145,7 +164,7 @@ export default class MIDIInputModule extends Module {
 			this.notes = this.notes.filter(note => note[0] !== event.data[1])
 
 			if(this.notes.length === 0) {
-				this.setParams(0, 0)
+				this.setParams(undefined, 0)
 			} else {
 				this.setParams(this.notes.slice(-1)[0][0], this.notes.slice(-1)[0][1])
 			}

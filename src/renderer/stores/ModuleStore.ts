@@ -9,6 +9,7 @@ import ModuleType from '../scripts/enum/ModuleType'
 
 import Module from '../scripts/module/Module'
 
+import ADSRModule from '../scripts/module/ADSRModule'
 import AudioPlayerModule from '../scripts/module/AudioPlayerModule'
 import CompressorModule from '../scripts/module/CompressorModule'
 import DelayModule from '../scripts/module/DelayModule'
@@ -24,6 +25,8 @@ import ParamEQModule from '../scripts/module/ParamEQModule'
 import SplitterModule from '../scripts/module/SplitterModule'
 import StereoPannerModule from '../scripts/module/StereoPannerModule'
 import VolumeModule from '../scripts/module/VolumeModule'
+
+import ADSRProcessor from '../scripts/processor/ADSRProcessor.ts?url'
 
 export const useModuleStore = defineStore('module', () => {
 	const cableStore = useCableStore()
@@ -48,6 +51,8 @@ export const useModuleStore = defineStore('module', () => {
 	async function init() {
 		midiAccess.value = await navigator.requestMIDIAccess()
 
+		audioCtx.value.audioWorklet.addModule(ADSRProcessor)
+
 		for(const module of [
 			// Source
 			new AudioPlayerModule(),
@@ -63,6 +68,7 @@ export const useModuleStore = defineStore('module', () => {
 			new VolumeModule(),
 			new StereoPannerModule(),
 			new DelayModule(),
+			new ADSRModule(),
 			new EchoModule(),
 			new ParamEQModule(),
 			new CompressorModule(),
