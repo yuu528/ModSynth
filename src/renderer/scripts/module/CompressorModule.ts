@@ -157,7 +157,7 @@ export default class CompressorModule extends Module {
 		requestAnimationFrame(() => this.drawGR())
 
 		const ctrl = this.getControl('gainReduction')
-		const output = this.data.outputs.output as DynamicsCompressorNode
+		const output = this.outputs.output as DynamicsCompressorNode
 
 		if(ctrl === undefined) return
 
