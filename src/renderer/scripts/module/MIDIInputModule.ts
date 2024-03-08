@@ -31,6 +31,15 @@ export default class MIDIInputModule extends Module {
 					value: ''
 				},
 				{
+					id: 'transpose',
+					name: 'Trans',
+					component: Component.Knob,
+					min: -24,
+					max: 24,
+					step: 1,
+					value: 0
+				},
+				{
 					id: 'in',
 					name: 'In',
 					component: Component.Pilot,
@@ -140,6 +149,8 @@ export default class MIDIInputModule extends Module {
 	}
 
 	private setParams(note?: number, velocity?: number) {
+		const ctrls = this.getControls()
+
 		const gateOutput = this.outputs.gateOutput as ConstantSourceNode
 		const pitchOutput = this.outputs.pitchOutput as ConstantSourceNode
 		const velocityOutput = this.outputs.velocityOutput as ConstantSourceNode
@@ -147,7 +158,7 @@ export default class MIDIInputModule extends Module {
 		if(note !== undefined) {
 			pitchOutput.offset.setValueAtTime(
 				NumberUtil.map(
-					NumberUtil.noteNumberToFreq(note),
+					NumberUtil.noteNumberToFreq(note + (ctrls.transpose.value as number)),
 					NumberUtil.noteNumberToFreq(0),
 					NumberUtil.noteNumberToFreq(127),
 					0, 1
