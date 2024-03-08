@@ -53,6 +53,15 @@ export default class OscillatorModule extends Module {
 					value: 1e3
 				},
 				{
+					id: 'detune',
+					name: 'Detune',
+					component: Component.Knob,
+					min: -100,
+					max: 100,
+					step: 1,
+					value: 0
+				},
+				{
 					id: 'volume',
 					name: 'Vol',
 					component: Component.Knob,
@@ -108,6 +117,7 @@ export default class OscillatorModule extends Module {
 
 		input.type = ctrls.type.value
 		input.frequency.setValueAtTime(ctrls.frequency.value as number, this.moduleStore.audioCtx.currentTime)
+		input.detune.setValueAtTime(ctrls.detune.value as number, this.moduleStore.audioCtx.currentTime)
 		cvGainInput.gain.setValueAtTime(1, this.moduleStore.audioCtx.currentTime)
 		cvGainInputOffset.offset.setValueAtTime(0, this.moduleStore.audioCtx.currentTime)
 		cvGain.gain.setValueAtTime(1, this.moduleStore.audioCtx.currentTime)
@@ -176,6 +186,10 @@ export default class OscillatorModule extends Module {
 
 			case 'frequency':
 				input.frequency.setValueAtTime(value as number, this.moduleStore.audioCtx.currentTime)
+			break
+
+			case 'detune':
+				input.detune.setValueAtTime(value as number, this.moduleStore.audioCtx.currentTime)
 			break
 
 			case 'volume':
