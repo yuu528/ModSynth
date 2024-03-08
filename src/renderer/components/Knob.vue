@@ -109,7 +109,14 @@ function keypress(event: KeyboardEvent) {
 		event.preventDefault()
 		return
 	} else {
-		if(isNaN(parseInt(event.key)) && event.key !== 'Enter' && event.key !== '.' && !NumberUtil.isSIUnitPrefix(event.key) && props.valueUnit.indexOf(event.key) === -1) {
+		if(
+			isNaN(parseInt(event.key))
+				&& event.key !== 'Enter'
+				&& event.key !== '.'
+				&& event.key !== '-'
+				&& !NumberUtil.isSIUnitPrefix(event.key)
+				&& (props.valueUnit === undefined || props.valueUnit.indexOf(event.key) === -1)
+		) {
 			event.preventDefault()
 		} else if(event.key === 'Enter') {
 			event.preventDefault()
@@ -118,7 +125,7 @@ function keypress(event: KeyboardEvent) {
 				new RegExp(`${props.valueUnit}$`),
 				''
 			)
-			let newValue = Number(value)
+			let newValue = parseInt(target.innerText)
 
 			if(NumberUtil.isSIValue(targetText)) {
 				newValue = NumberUtil.fromSI(targetText)
