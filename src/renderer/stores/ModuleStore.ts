@@ -171,14 +171,6 @@ export const useModuleStore = defineStore('module', () => {
 
 		event.dataTransfer.setData(mimes.value.moduleId, target.dataset.id)
 		event.dataTransfer.setData(mimes.value.moduleType, ModuleType.BASE)
-		event.dataTransfer.setData(
-			mimes.value.moduleDragOffsetX,
-			(event.clientX - target.getBoundingClientRect().left).toString()
-		)
-		event.dataTransfer.setData(
-			mimes.value.moduleDragOffsetY,
-			(event.clientY - target.getBoundingClientRect().top).toString()
-		)
 	}
 
 	function baseDragOver(event: DragEvent) {
@@ -258,14 +250,6 @@ export const useModuleStore = defineStore('module', () => {
 
 		event.dataTransfer.setData(mimes.value.moduleType, ModuleType.ENABLED)
 		event.dataTransfer.setData(mimes.value.moduleIdx, target.dataset.idx)
-		event.dataTransfer.setData(
-			mimes.value.moduleDragOffsetX,
-			(event.clientX - target.getBoundingClientRect().left).toString()
-		)
-		event.dataTransfer.setData(
-			mimes.value.moduleDragOffsetY,
-			(event.clientY - target.getBoundingClientRect().top).toString()
-		)
 	}
 
 	function dragOver(event: DragEvent) {
@@ -286,8 +270,6 @@ export const useModuleStore = defineStore('module', () => {
 		if(event.dataTransfer === null) return
 
 		if(event.dataTransfer.types.includes(mimes.value.moduleType) && !event.dataTransfer.types.includes(cableStore.mimes.cableId1)) {
-			const offsetX = parseInt(event.dataTransfer.getData(mimes.value.moduleDragOffsetX))
-			const offsetY = parseInt(event.dataTransfer.getData(mimes.value.moduleDragOffsetY))
 
 			const target = document.getElementById('moduleCase')
 

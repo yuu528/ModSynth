@@ -3,7 +3,6 @@ import ModuleCategory from '../../enum/ModuleCategory'
 import Control from './Control'
 import Jack from './Jack'
 import Monitor from './Monitor'
-import Pos from './Pos'
 
 export default interface ModuleData {
 	id: string

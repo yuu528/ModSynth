@@ -42,21 +42,19 @@
               :key="category"
               :value="category"
             >
-              <v-sheet v-for="module in modules" :key="module.data?.id">
-                <Module
-                  v-if="module.data !== undefined"
-                  draggable="true"
-                  :data-id="module.data.id"
-                  :key="module.data.id"
-                  :name="module.data.name"
-                  :controls="module.data.controls"
-                  :monitors="module.data.monitors"
-                  :jacks="module.data.jacks"
-                  @dragstart="moduleStore.baseDragStart"
-                  @dragend="moduleStore.dragEnd"
-                  style="transform: scale(0.8);"
-                />
-              </v-sheet>
+              <v-card
+                v-for="module in modules"
+                class="my-2 mx-2 moduleCard"
+                draggable="true"
+                :key="module.data.id"
+                :data-id="module.data.id"
+                @dragstart="moduleStore.baseDragStart"
+                @dragend="moduleStore.dragEnd"
+              >
+                <template v-slot:title>
+                  {{ module.data.name }}
+                </template>
+              </v-card>
             </v-window-item>
           </v-window>
         </v-sheet>

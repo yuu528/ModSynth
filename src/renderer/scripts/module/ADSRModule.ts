@@ -4,8 +4,6 @@ import ModuleCategory from '../enum/ModuleCategory'
 import JackType from '../enum/JackType'
 import Component from '../enum/Component'
 
-import { NumberUtil } from '../util/NumberUtil'
-
 import Module from './Module'
 
 export default class ADSRModule extends Module {
