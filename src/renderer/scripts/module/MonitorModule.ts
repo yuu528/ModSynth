@@ -1,4 +1,5 @@
 import { toRaw } from 'vue'
+import Chart from 'chart.js/auto'
 
 import ModuleCategory from '../enum/ModuleCategory'
 import JackType from '../enum/JackType'
@@ -10,6 +11,9 @@ import Module from './Module'
 
 export default class MonitorModule extends Module {
 	private strokeColor = 'limegreen'
+
+	private scopeChart: Chart | null = null
+	private fftChart: Chart | null = null
 
 	constructor() {
 		super()
@@ -55,13 +59,13 @@ export default class MonitorModule extends Module {
 					id: 'oscilloscope',
 					name: 'Oscilloscope',
 					width: 200,
-					height: 80
+					height: 120
 				},
 				{
 					id: 'fft',
 					name: 'FFT',
 					width: 200,
-					height: 80
+					height: 120
 				},
 			],
 			jacks: [
@@ -114,51 +118,88 @@ export default class MonitorModule extends Module {
 
 	private drawScope() {
 		requestAnimationFrame(() => this.drawScope())
-		const canvas = document.getElementById(`m${this.data.idx}.monitor.${this.data.monitors[0].id}`) as HTMLCanvasElement
+		if(this.data === undefined) return
+		if(this.data.monitors === undefined) return
 
-		if(canvas !== null) {
-			const ctx = canvas.getContext('2d')
+		const canvas = document.getElementById(`m${this.data.idx}.monitor.${this.data.monitors[0].id}`) as HTMLCanvasElement | null
 
-			if(ctx === null) return
+		if(canvas === null) return
 
-			const scopeSizeCtrl = this.getControl('scopeSize')
-			const scopeAmpCtrl = this.getControl('scopeAmp')
+		const input = this.inputs.input as AnalyserNode
 
-			if(scopeSizeCtrl === undefined || scopeAmpCtrl === undefined) return
-			if(scopeSizeCtrl.max === undefined || scopeSizeCtrl.value === undefined || scopeAmpCtrl.value === undefined) return
+		const ctrls = this.getControls()
 
-			const maxScopeSize = scopeSizeCtrl.max as number
-			const scopeSize = scopeSizeCtrl.value as number
-			const scopeAmp = scopeAmpCtrl.value as number
+		if(ctrls.scopeSize.max === undefined) return
 
-			const input = this.inputs.input as AnalyserNode
+		const len = Math.round(input.frequencyBinCount / (ctrls.scopeSize.max - (ctrls.scopeSize.value as number) + 1))
 
-			const len = input.frequencyBinCount / (maxScopeSize - scopeSize + 1)
-			const sliceWidth = (canvas.width) / (len - 2)
+		const byteData = new Uint8Array(len)
+		input.getByteTimeDomainData(byteData)
 
-			const data = new Uint8Array(len)
-			input.getByteTimeDomainData(data)
+		const data = Array.from(byteData).map((value, index) => {
+			return {
+				x: index,
+				y: value
+			}
+		})
 
-			ctx.fillStyle = 'black'
-			ctx.fillRect(0, 0, canvas.width, canvas.height)
+		const ySize = 256 / (ctrls.scopeAmp.value as number)
+		const yRange = {
+			min: 128 - ySize / 2,
+			max: 128 + ySize / 2
+		}
 
-			ctx.lineWidth = 2
-			ctx.strokeStyle = this.strokeColor
-
-			ctx.beginPath()
-
-			for(let i = 0, x = 0; i < len; i++, x += sliceWidth) {
-				const y = canvas.height - (data[i] / 256 * canvas.height * scopeAmp - (canvas.height / 2) * (scopeAmp - 1))
-				if(i === 0) {
-					ctx.moveTo(x, y)
-				} else {
-					ctx.lineTo(x, y)
-				}
+		if(this.scopeChart !== null) {
+			if(this.scopeChart.options.scales?.x !== undefined) {
+				this.scopeChart.options.scales.x.max = len
 			}
 
-			ctx.lineTo(canvas.width + ctx.lineWidth, canvas.height / 2)
+			if(this.scopeChart.options.scales?.y !== undefined) {
+				this.scopeChart.options.scales.y.min = yRange.min
+				this.scopeChart.options.scales.y.max = yRange.max
+			}
 
-			ctx.stroke()
+			this.scopeChart.data.datasets[0].data = data
+			this.scopeChart.update('none')
+		} else {
+			this.scopeChart = new Chart(canvas, {
+				type: 'scatter',
+				data: {
+					datasets: [{
+						data: data,
+						parsing: false,
+						borderColor: this.strokeColor,
+						borderWidth: 2,
+						pointRadius: 0,
+						showLine: true
+					}]
+				},
+				options: {
+					animation: false,
+					events: [],
+					scales: {
+						x: {
+							min: 0,
+							max: len,
+							ticks: {
+								display: false
+							}
+						},
+						y: {
+							min: yRange.min,
+							max: yRange.max,
+							ticks: {
+								display: false
+							}
+						}
+					},
+					plugins: {
+						legend: {
+							display: false
+						}
+					}
+				}
+			})
 		}
 	}
 
@@ -167,88 +208,78 @@ export default class MonitorModule extends Module {
 		if(this.data === undefined) return
 		if(this.data.monitors === undefined) return
 
-		const canvas = document.getElementById(`m${this.data.idx}.monitor.${this.data.monitors[1].id}`) as HTMLCanvasElement
+		const canvas = document.getElementById(`m${this.data.idx}.monitor.${this.data.monitors[1].id}`) as HTMLCanvasElement | null
 
-		if(canvas !== null) {
-			const ctx = canvas.getContext('2d')
+		if(canvas === null) return
 
-			if(ctx === null) return
+		const input = this.inputs.input as AnalyserNode
 
-			const input = this.inputs.input as AnalyserNode
+		const ctrls = this.getControls()
 
-			const len = input.frequencyBinCount
+		const freqStep = this.moduleStore.audioCtx.sampleRate / input.fftSize
 
-			const data = new Uint8Array(len)
-			input.getByteFrequencyData(data)
+		const freqData = new Uint8Array(input.frequencyBinCount)
+		input.getByteFrequencyData(freqData)
 
-			const freqStep = this.moduleStore.audioCtx.sampleRate / input.fftSize
-
-			const fftMaxCtrl = this.getControl('fftMax')
-
-			if(fftMaxCtrl === undefined) return
-
-			if(fftMaxCtrl.value === undefined) return
-
-			const fftMax = fftMaxCtrl.value as number
-
-			const maxFreq = Math.min(fftMax, freqStep * len)
-
-			const sliceWidth = (canvas.width) / (maxFreq / freqStep)
-
-			const rulerMax = NumberUtil.getNiceRoundNumber(maxFreq, 3)
-			const rulerCount = 6
-			const rulerStep = NumberUtil.getNiceRoundNumber(rulerMax / rulerCount)
-
-			let rulers = []
-			for(let i = 0; i <= rulerMax; i += rulerStep) {
-				rulers.push(i)
+		const data = Array.from(freqData).map((value, index) => {
+			return {
+				x: (index + 1) * freqStep,
+				y: value
 			}
+		})
 
-			ctx.fillStyle = 'black'
-			ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-			ctx.lineWidth = sliceWidth + 1
-			ctx.strokeStyle = this.strokeColor
-
-			ctx.fillStyle = 'white'
-			ctx.font = '8px sans-serif'
-
-			ctx.beginPath()
-
-			for(let i = 0, x = 0; i * freqStep <= maxFreq; i++, x += sliceWidth) {
-				const y = ((256 - data[i]) / 256.0) * canvas.height
-				ctx.moveTo(x, canvas.height)
-				ctx.lineTo(x, y)
+		if(this.fftChart !== null) {
+			if(this.fftChart.options.scales?.x !== undefined) {
+				this.fftChart.options.scales.x.max = ctrls.fftMax.value as number
 			}
-
-			ctx.stroke()
-
-			ctx.beginPath()
-			ctx.lineWidth = 1
-			ctx.strokeStyle = 'gray'
-
-			for(let i = 0, x = 0, r = 0; i * freqStep <= maxFreq; i++, x += sliceWidth) {
-				if(i * freqStep > rulers[r]) {
-					const rulerK = rulers[r] / 1e3
-					let text
-					if(rulerK >= 1) {
-						text = `${rulerK}k`
-					} else {
-						text = rulers[r].toString()
+			this.fftChart.data.datasets[0].data = data
+			this.fftChart.update('none')
+		} else {
+			this.fftChart = new Chart(canvas, {
+				type: 'scatter',
+				data: {
+					datasets: [{
+						data: data,
+						parsing: false,
+						borderColor: this.strokeColor,
+						borderWidth: 2,
+						pointRadius: 0,
+						showLine: true
+					}]
+				},
+				options: {
+					animation: false,
+					events: [],
+					scales: {
+						x: {
+							type: 'logarithmic',
+							max: ctrls.fftMax.value as number,
+							ticks: {
+								minRotation: 90,
+								maxRotation: 90,
+								callback: (value) => NumberUtil.toSI(value as number)
+							}
+						},
+						y: {
+							min: 0,
+							max: 255,
+							ticks: {
+								callback: (value) => Math.round(NumberUtil.map(
+									value as number,
+									0, 255,
+									input.minDecibels,
+									input.maxDecibels
+								))
+							}
+						}
+					},
+					plugins: {
+						legend: {
+							display: false
+						}
 					}
-					const meas = ctx.measureText(text)
-					const textPosX = Math.min(Math.max(0, x - meas.width / 2), canvas.width - meas.width)
-					const textPosY = canvas.height - (meas.actualBoundingBoxAscent + meas.actualBoundingBoxDescent)
-					const linePos = 0
-
-					ctx.fillText(text, textPosX, textPosY)
-					ctx.moveTo(x, canvas.height)
-					ctx.lineTo(x, linePos)
-					r++
 				}
-			}
-
-			ctx.stroke()
+			})
 		}
 	}
 }
