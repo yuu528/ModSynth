@@ -120,6 +120,9 @@ export const useModuleStore = defineStore('module', () => {
 		edited.value = true
 
 		nextTick(() => {
+			enabledModules.value.forEach(module => {
+				module.onReorder()
+			})
 			cableStore.updateCables()
 		})
 	}
