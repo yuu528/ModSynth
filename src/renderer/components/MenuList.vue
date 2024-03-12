@@ -4,7 +4,7 @@
       v-for="(item, index) in props.items"
       :key="index"
       :value="index"
-      @click="onClick(props.parentId, item)"
+      @click="(event: MouseEvent) => onClick(event, props.parentId, item)"
     >
       <!-- when item is string -->
       <v-list-item-title v-if="typeof item === 'string'">{{ item }}</v-list-item-title>
@@ -52,7 +52,7 @@ const props = defineProps([
   'fn'
 ])
 
-function onClick(parentId: string, item: string | object) {
+function onClick(event: MouseEvent, parentId: string, item: string | object) {
   switch(typeof item) {
     case 'string':
       props.fn(`${parentId}.${item}`)
@@ -60,7 +60,8 @@ function onClick(parentId: string, item: string | object) {
 
     case 'object':
       if('items' in item) {
-        return
+        event.preventDefault()
+        event.stopPropagation()
       } else if('name' in item && 'value' in item) {
         props.fn(`${parentId}`, item.value)
       }
