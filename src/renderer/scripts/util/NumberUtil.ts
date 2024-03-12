@@ -5,10 +5,16 @@ export class NumberUtil {
 		return Math.floor(Math.abs(value)).toString().length
 	}
 
-	public static toSI(value: number, disabledUnits?: Unit[]): string {
+	public static toSI(value: number, disabledUnits?: Unit[], pointLength?: number): string {
 		if(disabledUnits === undefined) {
 			disabledUnits = []
 		}
+
+		if(pointLength === undefined) {
+			pointLength = 0
+		}
+
+		const pointPad = Math.pow(10, pointLength)
 
 		if(value === 0) {
 			return '0'
@@ -19,7 +25,7 @@ export class NumberUtil {
 		} else if(value < 1e3) {
 			return value.toString()
 		} else if(value < 1e6 && !disabledUnits.includes(Unit.KILO)) {
-			return `${Math.floor(value / 1e3)}${Unit.KILO}`
+			return `${Math.round(value / 1e3 * pointPad) / pointPad}${Unit.KILO}`
 		}
 
 		return value.toString()

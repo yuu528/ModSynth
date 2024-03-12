@@ -26,14 +26,44 @@ export default class MonitorModule extends Module {
 			icon: 'mdi-monitor-speaker',
 			controls: [
 				{
-					id: 'fftMax',
-					name: 'FFT Max',
+					id: 'minFreq',
+					name: 'Min Freq',
+					component: Component.Knob,
+					min: 0,
+					max: 19e3,
+					step: 1e3,
+					value: 0,
+					si: true
+				},
+				{
+					id: 'maxFreq',
+					name: 'Max Freq',
 					component: Component.Knob,
 					min: 1e3,
-					max: 16e3,
+					max: 20e3,
 					step: 1e3,
 					value: 16e3,
 					si: true
+				},
+				{
+					id: 'maxLevel',
+					name: 'Max Level',
+					component: Component.Knob,
+					min: -99,
+					max: 0,
+					step: 1,
+					value: -30,
+					valueUnit: 'dB'
+				},
+				{
+					id: 'minLevel',
+					name: 'Min Level',
+					component: Component.Knob,
+					min: -100,
+					max: -40,
+					step: 1,
+					value: -100,
+					valueUnit: 'dB'
 				},
 				{
 					id: 'scopeSize',
@@ -98,20 +128,36 @@ export default class MonitorModule extends Module {
 
 	updateValue(idx: number, id: string, value: number) {
 		const control = this.getControl(id)
+		const ctrls = this.getControls()
+		const input = this.inputs.input as AnalyserNode
 
 		if(control === undefined) return
 
 		switch(id) {
-			case 'fftMax':
-				control.value = value
+			case 'maxFreq':
+				ctrls.minFreq.max = value - (ctrls.minFreq.step ?? 0)
+				ctrls.minFreq.value = Math.min(value, ctrls.minFreq.value as number)
 			break
 
-			case 'scopeSize':
-				control.value = value
+			case 'minFreq':
+				ctrls.maxFreq.min = value + (ctrls.maxFreq.step ?? 0)
+				ctrls.maxFreq.value = Math.max(value, ctrls.maxFreq.value as number)
 			break
 
-			case 'scopeAmp':
-				control.value = value
+			case 'maxLevel':
+				ctrls.minLevel.max = value - (ctrls.minLevel.step ?? 0)
+				ctrls.minLevel.value = Math.min(value, ctrls.minLevel.value as number)
+
+				input.minDecibels = ctrls.minLevel.value as number
+				input.maxDecibels = value
+			break
+
+			case 'minLevel':
+				ctrls.maxLevel.min = value + (ctrls.maxLevel.step ?? 0)
+				ctrls.maxLevel.value = Math.max(value, ctrls.maxLevel.value as number)
+
+				input.minDecibels = value
+				input.maxDecibels = ctrls.maxLevel.value as number
 			break
 		}
 	}
@@ -193,6 +239,9 @@ export default class MonitorModule extends Module {
 							}
 						}
 					},
+					layout: {
+						padding: -5
+					},
 					plugins: {
 						legend: {
 							display: false
@@ -228,10 +277,17 @@ export default class MonitorModule extends Module {
 			}
 		})
 
+		const freqRange = {
+			min: Math.max(ctrls.minFreq.value as number, freqStep),
+			max: ctrls.maxFreq.value as number
+		}
+
 		if(this.fftChart !== null) {
 			if(this.fftChart.options.scales?.x !== undefined) {
-				this.fftChart.options.scales.x.max = ctrls.fftMax.value as number
+				this.fftChart.options.scales.x.min = freqRange.min
+				this.fftChart.options.scales.x.max = freqRange.max
 			}
+
 			this.fftChart.data.datasets[0].data = data
 			this.fftChart.update('none')
 		} else {
@@ -253,11 +309,18 @@ export default class MonitorModule extends Module {
 					scales: {
 						x: {
 							type: 'logarithmic',
-							max: ctrls.fftMax.value as number,
+							max: ctrls.maxFreq.value as number,
 							ticks: {
 								minRotation: 90,
 								maxRotation: 90,
-								callback: (value) => NumberUtil.toSI(value as number)
+								callback: (value) => NumberUtil.toSI(
+									Math.round(value as number * 10) / 10,
+									undefined,
+									1
+								)
+							},
+							grid: {
+								color: 'rgba(255, 255, 255, 0.2)'
 							}
 						},
 						y: {
@@ -270,6 +333,9 @@ export default class MonitorModule extends Module {
 									input.minDecibels,
 									input.maxDecibels
 								))
+							},
+							grid: {
+								color: 'rgba(255, 255, 255, 0.2)'
 							}
 						}
 					},
