@@ -1,22 +1,7 @@
 <template>
   <v-layout>
     <v-system-bar class="d-flex justify-start">
-      <v-btn v-for="menu in menus" variant="text" class="text-none h-100 menuBtn">
-        {{ menu.name }}
-
-        <v-menu activator="parent">
-          <v-list density="compact">
-            <v-list-item
-              v-for="(item, index) in menu.items"
-              :key="index"
-              :value="index"
-              @click="menuClick(menu.name, item)"
-            >
-              <v-list-item-title>{{ item }}</v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-menu>
-      </v-btn>
+      <Menu :menus="menus" :fn="menuClick" />
       <v-spacer></v-spacer>
       <span>Latency: {{ latency }}ms</span>
     </v-system-bar>
@@ -141,8 +126,15 @@ import ModuleClass from './scripts/module/Module'
 
 import Jack from './components/Jack.vue'
 import Module from './components/Module.vue'
+import Menu from './components/Menu.vue'
 
-const menus = [
+const outputDevices = ref<{
+  name: string,
+  value: string,
+  selected: boolean
+}[]>([])
+
+const menus = computed(() => [
   {
     name: 'File',
     items: [
@@ -150,8 +142,17 @@ const menus = [
       'Open',
       'Save'
     ]
+  },
+  {
+    name: 'Device',
+    items: [
+      {
+        name: 'Output Devices',
+        items: outputDevices.value
+      }
+    ]
   }
-]
+])
 
 const cableStore = useCableStore()
 const moduleStore = useModuleStore()
@@ -184,6 +185,17 @@ init()
 async function init() {
   await moduleStore.init()
 
+  // generate output devices menu
+  outputDevices.value = (await navigator.mediaDevices.enumerateDevices()).filter(device =>
+    device.kind === 'audiooutput'
+  ).map(device => ({
+    name: device.label,
+    value: device.deviceId,
+    selected: false
+  }))
+
+  selectOutputDevice('')
+
   for(const module of moduleStore.modules) {
     if(module.data === undefined) continue
 
@@ -203,6 +215,32 @@ function updateLatency() {
   latency.value = Math.round(moduleStore.audioCtx.outputLatency * 1000)
 }
 
+function selectOutputDevice(id: string) {
+  let sinkId = id
+  let findId = id
+
+  switch(id) {
+    case 'default':
+      sinkId = ''
+      findId = 'default'
+    break
+
+    case '':
+      sinkId = ''
+      findId = 'default'
+    break
+  }
+
+  moduleStore.audioCtx.setSinkId(sinkId)
+
+  const device = outputDevices.value.find(device => device.value === findId)
+
+  if(device !== undefined) {
+    outputDevices.value.forEach(device => device.selected = false)
+    device.selected = true
+  }
+}
+
 function openAlert(title: string, text: string, buttons: {text: string, fn: () => {}}[]) {
   alertData.title = title
   alertData.text = text
@@ -214,10 +252,12 @@ function closeAlert() {
   alertVisible.value = false
 }
 
-function menuClick(menuName: string, itemName: string) {
-  switch(menuName) {
+function menuClick(id: string, arg: string) {
+  const ids = id.split('.')
+
+  switch(ids[0]) {
     case 'File':
-      switch(itemName) {
+      switch(ids[1]) {
         case 'New':
           if(moduleStore.edited) {
             openAlert(
@@ -272,6 +312,14 @@ function menuClick(menuName: string, itemName: string) {
 
         case 'Save':
           saveToFile()
+        break
+      }
+    break
+
+    case 'Device':
+      switch(ids[1]) {
+        case 'Output Devices':
+          selectOutputDevice(arg)
         break
       }
     break
@@ -382,10 +430,3 @@ function calcPath(x1: number, y1: number, x2: number, y2: number) {
   return d
 }
 </script>
-
-<style scoped>
-.menuBtn {
-  min-width: 0;
-  padding: 0 0.5em;
-}
-</style>
