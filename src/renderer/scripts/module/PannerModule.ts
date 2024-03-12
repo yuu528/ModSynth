@@ -183,6 +183,10 @@ export default class PannerModule extends Module {
 		this.draw()
 	}
 
+	onReorder() {
+		this.draw()
+	}
+
 	updateValue(idx: number, id: string, value: number | string) {
 		const output = this.outputs.output as PannerNode
 
