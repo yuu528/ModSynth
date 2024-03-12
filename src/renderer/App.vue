@@ -17,6 +17,8 @@
           </v-list>
         </v-menu>
       </v-btn>
+      <v-spacer></v-spacer>
+      <span>Latency: {{ latency }}ms</span>
     </v-system-bar>
     <v-app-bar density="compact">
       <v-spacer></v-spacer>
@@ -173,6 +175,10 @@ const alertData = {
 }
 const computedAlertData = computed(() => alertData)
 
+const latency = ref(0)
+updateLatency()
+setInterval(updateLatency, 1000)
+
 init()
 
 async function init() {
@@ -191,6 +197,10 @@ async function init() {
   moduleTab.value = Object.keys(modulesByCategory.value)[0]
 
   window.addEventListener('resize', cableStore.updateCables)
+}
+
+function updateLatency() {
+  latency.value = Math.round(moduleStore.audioCtx.outputLatency * 1000)
 }
 
 function openAlert(title: string, text: string, buttons: {text: string, fn: () => {}}[]) {
