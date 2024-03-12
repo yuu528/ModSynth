@@ -70,6 +70,8 @@ export default class Module {
 		this.data.idx = idx
 	}
 
+	onReorder() {}
+
 	onConnectedTo(jackId: string) {}
 
 	onDisconnectedTo(jackId: string) {}

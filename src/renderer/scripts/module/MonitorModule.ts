@@ -126,6 +126,18 @@ export default class MonitorModule extends Module {
 		this.drawFFT()
 	}
 
+	onReorder() {
+		if(this.scopeChart !== null) {
+			this.scopeChart.destroy()
+			this.scopeChart = null
+		}
+
+		if(this.fftChart !== null) {
+			this.fftChart.destroy()
+			this.fftChart = null
+		}
+	}
+
 	updateValue(idx: number, id: string, value: number) {
 		const control = this.getControl(id)
 		const ctrls = this.getControls()

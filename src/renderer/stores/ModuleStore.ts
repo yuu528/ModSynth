@@ -136,6 +136,9 @@ export const useModuleStore = defineStore('module', () => {
 		enabledModulesOrder.value.splice(toOrder, 0, fromIdx)
 
 		nextTick(() => {
+			enabledModules.value.forEach(module => {
+				module.onReorder()
+			})
 			cableStore.updateCables()
 		})
 	}
